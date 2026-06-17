@@ -1,0 +1,1281 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); background: var(--color-background-tertiary); color: var(--color-text-primary); min-height: 100vh; }
+  
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  
+  /* Top nav */
+  .topnav {
+    background: var(--color-background-primary);
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-icon {
+    width: 32px; height: 32px;
+    background: #1a2e4a;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: #7eb9f5;
+    font-size: 16px;
+  }
+  .brand-text { font-size: 14px; font-weight: 500; letter-spacing: -0.01em; }
+  .brand-sub { font-size: 11px; color: var(--color-text-secondary); }
+  .nav-actions { display: flex; align-items: center; gap: 8px; }
+  .badge-live {
+    font-size: 11px; font-weight: 500;
+    background: #e8f5e9; color: #2e7d32;
+    padding: 3px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .live-dot { width: 6px; height: 6px; background: #43a047; border-radius: 50%; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  
+  /* Layout */
+  .layout { display: flex; flex: 1; }
+  
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: var(--color-background-primary);
+    border-right: 0.5px solid var(--color-border-tertiary);
+    padding: 16px 0;
+    flex-shrink: 0;
+  }
+  .nav-section { margin-bottom: 8px; }
+  .nav-label {
+    font-size: 10px; font-weight: 500;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0 16px 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--color-background-secondary); color: var(--color-text-primary); }
+  .nav-item.active { background: #eef4fc; color: #1a6ab5; border-left-color: #1a6ab5; font-weight: 500; }
+  .nav-item i { font-size: 16px; }
+  .nav-badge {
+    margin-left: auto; font-size: 10px; font-weight: 500;
+    background: #fdecea; color: #c62828;
+    padding: 1px 6px; border-radius: 10px;
+  }
+  
+  /* Main */
+  .main { flex: 1; overflow-y: auto; padding: 20px 24px; }
+  
+  /* Page header */
+  .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .page-title { font-size: 18px; font-weight: 500; }
+  .page-sub { font-size: 13px; color: var(--color-text-secondary); margin-top: 2px; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn {
+    font-size: 13px; font-weight: 500;
+    padding: 7px 14px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--color-background-secondary); }
+  .btn-primary {
+    background: #1a2e4a; color: #e8f0f8;
+    border-color: #1a2e4a;
+  }
+  .btn-primary:hover { background: #243d5f; }
+  .btn-danger { background: #c62828; color: #fff; border-color: #c62828; }
+  .btn-danger:hover { background: #b71c1c; }
+  
+  /* Metric cards */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 14px 16px;
+  }
+  .metric-label { font-size: 11px; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .metric-value { font-size: 26px; font-weight: 500; letter-spacing: -0.02em; }
+  .metric-delta { font-size: 11px; margin-top: 4px; }
+  .delta-up { color: #c62828; }
+  .delta-dn { color: #2e7d32; }
+  
+  /* Grid 2-col */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  
+  /* Cards */
+  .card {
+    background: var(--color-background-primary);
+    border: 0.5px solid var(--color-border-tertiary);
+    border-radius: var(--border-radius-lg);
+    padding: 16px;
+  }
+  .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .card-title { font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .card-title i { font-size: 15px; color: var(--color-text-secondary); }
+  .card-action { font-size: 12px; color: #1a6ab5; cursor: pointer; }
+  
+  /* Complaint table */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { text-align: left; font-size: 10px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; padding: 6px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  td { padding: 9px 8px; border-bottom: 0.5px solid var(--color-border-tertiary); color: var(--color-text-primary); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--color-background-secondary); }
+  
+  .severity {
+    font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 10px;
+    display: inline-block;
+  }
+  .sev-critical { background: #fdecea; color: #b71c1c; }
+  .sev-high { background: #fff3e0; color: #e65100; }
+  .sev-medium { background: #fff9c4; color: #f57f17; }
+  .sev-low { background: #e8f5e9; color: #1b5e20; }
+  
+  .risk-bar-wrap { display: flex; align-items: center; gap: 6px; }
+  .risk-bar { height: 4px; border-radius: 2px; flex: 1; background: var(--color-background-secondary); overflow: hidden; }
+  .risk-fill { height: 100%; border-radius: 2px; }
+  
+  /* Alert panel */
+  .alert-item {
+    display: flex; gap: 10px;
+    padding: 10px 0;
+    border-bottom: 0.5px solid var(--color-border-tertiary);
+  }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .ai-red { background: #fdecea; color: #c62828; }
+  .ai-orange { background: #fff3e0; color: #e65100; }
+  .ai-blue { background: #e3f2fd; color: #1565c0; }
+  .alert-content { flex: 1; min-width: 0; }
+  .alert-title { font-size: 12px; font-weight: 500; margin-bottom: 2px; }
+  .alert-desc { font-size: 11px; color: var(--color-text-secondary); line-height: 1.4; }
+  .alert-time { font-size: 10px; color: var(--color-text-tertiary); margin-top: 3px; }
+  
+  /* Map placeholder */
+  .map-area {
+    background: #0d1b2a;
+    border-radius: var(--border-radius-md);
+    height: 240px;
+    position: relative;
+    overflow: hidden;
+  }
+  .map-overlay { position: absolute; inset: 0; }
+  .map-grid {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(30,100,200,0.08) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(30,100,200,0.08) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+  .hotspot {
+    position: absolute;
+    border-radius: 50%;
+    animation: hotpulse 2s infinite;
+  }
+  @keyframes hotpulse {
+    0%{transform:scale(1);opacity:0.9}
+    50%{transform:scale(1.2);opacity:0.6}
+    100%{transform:scale(1);opacity:0.9}
+  }
+  .map-pin {
+    position: absolute;
+    font-size: 18px;
+    transform: translate(-50%,-50%);
+    cursor: pointer;
+  }
+  .map-legend {
+    position: absolute; bottom: 10px; left: 10px;
+    background: rgba(13,27,42,0.85);
+    border: 0.5px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 10px;
+    color: #8ab4d4;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .legend-row { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .map-label {
+    position: absolute;
+    font-size: 10px;
+    color: #7eb9f5;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  
+  /* Timeline */
+  .timeline-item { display: flex; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .timeline-item:last-child { border-bottom: none; }
+  .tl-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .tl-content { flex: 1; }
+  .tl-title { font-size: 12px; font-weight: 500; }
+  .tl-desc { font-size: 11px; color: var(--color-text-secondary); margin-top: 1px; }
+  .tl-time { font-size: 10px; color: var(--color-text-tertiary); }
+  
+  /* Prediction card */
+  .pred-card {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .pred-card:hover { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); }
+  .pred-card:last-child { margin-bottom: 0; }
+  .pred-location { font-size: 12px; font-weight: 500; }
+  .pred-detail { font-size: 11px; color: var(--color-text-secondary); margin-top: 2px; }
+  .pred-prob {
+    font-size: 15px; font-weight: 500;
+    color: #c62828;
+  }
+  .prob-label { font-size: 10px; color: var(--color-text-tertiary); text-align: right; }
+  
+  /* Complaint form */
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; }
+  input, select, textarea {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    padding: 7px 10px;
+    border: 0.5px solid var(--color-border-secondary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-background-primary);
+    color: var(--color-text-primary);
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: #1a6ab5;
+    box-shadow: 0 0 0 2px rgba(26,106,181,0.15);
+  }
+  textarea { resize: vertical; min-height: 70px; }
+  
+  /* Model accuracy */
+  .accuracy-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .accuracy-row:last-child { border-bottom: none; }
+  .acc-label { font-size: 12px; }
+  .acc-pct { font-size: 13px; font-weight: 500; }
+  .acc-bar { height: 3px; background: var(--color-background-secondary); border-radius: 2px; margin-top: 3px; width: 80px; }
+  .acc-fill { height: 100%; border-radius: 2px; background: #1a6ab5; }
+  
+  /* Section tabs */
+  .tabs { display: flex; gap: 0; margin-bottom: 16px; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .tab {
+    font-size: 13px; padding: 8px 16px; cursor: pointer;
+    color: var(--color-text-secondary);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    margin-bottom: -0.5px;
+  }
+  .tab.active { color: #1a6ab5; border-bottom-color: #1a6ab5; font-weight: 500; }
+  .tab:hover:not(.active) { color: var(--color-text-primary); }
+  
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--color-border-secondary); border-radius: 2px; }
+  
+  /* Status indicators */
+  .status-pill {
+    font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .sp-open { background: #fdecea; color: #b71c1c; }
+  .sp-investigating { background: #fff3e0; color: #e65100; }
+  .sp-resolved { background: #e8f5e9; color: #1b5e20; }
+  .sp-pending { background: #e3f2fd; color: #0d47a1; }
+  
+  /* Steps */
+  .step-row { display: flex; gap: 0; margin-bottom: 20px; }
+  .step {
+    flex: 1; text-align: center; position: relative;
+    padding-bottom: 8px;
+  }
+  .step::after {
+    content: ''; position: absolute;
+    top: 16px; left: 50%; right: -50%;
+    height: 1px; background: var(--color-border-tertiary);
+  }
+  .step:last-child::after { display: none; }
+  .step-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--color-background-secondary);
+    border: 0.5px solid var(--color-border-secondary);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500;
+    margin: 0 auto 6px;
+    position: relative; z-index: 1;
+  }
+  .step.done .step-num { background: #1a2e4a; color: #e8f0f8; border-color: #1a2e4a; }
+  .step.active .step-num { background: #1a6ab5; color: #fff; border-color: #1a6ab5; }
+  .step-label { font-size: 10px; color: var(--color-text-secondary); }
+  .step.active .step-label { color: #1a6ab5; font-weight: 500; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<h2 class="sr-only" style="position:absolute;left:-9999px">Cybercrime Predictive Analytics Framework - Full Stack Dashboard</h2>
+<div class="app">
+
+<!-- Top nav -->
+<nav class="topnav">
+  <div class="brand">
+    <div class="brand-icon"><i class="ti ti-shield-lock" aria-hidden="true"></i></div>
+    <div>
+      <div class="brand-text">CyberShield Analytics</div>
+      <div class="brand-sub">Predictive Cybercrime Intelligence Platform</div>
+    </div>
+  </div>
+  <div class="nav-actions">
+    <div class="badge-live"><span class="live-dot"></span> System Live</div>
+    <button class="btn" style="font-size:12px; padding:5px 10px;"><i class="ti ti-bell" aria-hidden="true"></i></button>
+    <button class="btn" style="font-size:12px; padding:5px 10px;"><i class="ti ti-user" aria-hidden="true"></i> Inspector Dev</button>
+  </div>
+</nav>
+
+<div class="layout">
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="nav-section">
+    <div class="nav-label">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><i class="ti ti-dashboard" aria-hidden="true"></i> Dashboard</div>
+    <div class="nav-item" onclick="showPage('complaints')"><i class="ti ti-file-alert" aria-hidden="true"></i> Complaints <span class="nav-badge">14</span></div>
+    <div class="nav-item" onclick="showPage('map')"><i class="ti ti-map-pin" aria-hidden="true"></i> Threat Map</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Intelligence</div>
+    <div class="nav-item" onclick="showPage('predictions')"><i class="ti ti-brain" aria-hidden="true"></i> Predictions</div>
+    <div class="nav-item" onclick="showPage('alerts')"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Alerts <span class="nav-badge">3</span></div>
+    <div class="nav-item" onclick="showPage('network')"><i class="ti ti-network" aria-hidden="true"></i> Mule Network</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Operations</div>
+    <div class="nav-item" onclick="showPage('submit')"><i class="ti ti-plus" aria-hidden="true"></i> File Complaint</div>
+    <div class="nav-item" onclick="showPage('interventions')"><i class="ti ti-hand-stop" aria-hidden="true"></i> Interventions</div>
+    <div class="nav-item" onclick="showPage('reports')"><i class="ti ti-report" aria-hidden="true"></i> Reports</div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">System</div>
+    <div class="nav-item" onclick="showPage('model')"><i class="ti ti-cpu" aria-hidden="true"></i> Model Config</div>
+    <div class="nav-item" onclick="showPage('settings')"><i class="ti ti-settings" aria-hidden="true"></i> Settings</div>
+  </div>
+</aside>
+
+<!-- Main content -->
+<main class="main" id="main-content">
+
+<!-- DASHBOARD PAGE -->
+<div id="page-dashboard">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Operational Dashboard</div>
+      <div class="page-sub">Real-time cybercrime intelligence — updated 2 min ago</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn"><i class="ti ti-refresh" aria-hidden="true"></i> Refresh</button>
+      <button class="btn btn-primary" onclick="showPage('submit')"><i class="ti ti-plus" aria-hidden="true"></i> New Complaint</button>
+    </div>
+  </div>
+  
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-label"><i class="ti ti-file-alert" style="font-size:13px"></i> Active Complaints</div>
+      <div class="metric-value">247</div>
+      <div class="metric-delta delta-up"><i class="ti ti-arrow-up" style="font-size:11px"></i> +18 today</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label"><i class="ti ti-brain" style="font-size:13px"></i> Predicted Hotspots</div>
+      <div class="metric-value">12</div>
+      <div class="metric-delta delta-up"><i class="ti ti-alert-circle" style="font-size:11px"></i> 3 critical</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label"><i class="ti ti-hand-stop" style="font-size:13px"></i> Interventions Today</div>
+      <div class="metric-value">34</div>
+      <div class="metric-delta delta-dn"><i class="ti ti-check" style="font-size:11px"></i> 89% success</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label"><i class="ti ti-currency-rupee" style="font-size:13px"></i> Funds Frozen (₹)</div>
+      <div class="metric-value">4.2Cr</div>
+      <div class="metric-delta delta-dn"><i class="ti ti-arrow-up" style="font-size:11px"></i> +₹64L today</div>
+    </div>
+  </div>
+  
+  <div class="grid2">
+    <!-- Chart -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-chart-line" aria-hidden="true"></i> Complaint Trend (7 days)</div>
+      </div>
+      <div style="position:relative;height:180px;">
+        <canvas id="trendChart" role="img" aria-label="Line chart of complaint trend over 7 days">Complaint counts rising from 28 to 47 over the past 7 days.</canvas>
+      </div>
+    </div>
+    <!-- Alerts -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Active Alerts</div>
+        <span class="card-action" onclick="showPage('alerts')">View all</span>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon ai-red"><i class="ti ti-map-pin" aria-hidden="true"></i></div>
+        <div class="alert-content">
+          <div class="alert-title">High-risk ATM cluster — T. Nagar, Chennai</div>
+          <div class="alert-desc">Model predicts 91% withdrawal probability within 2h window</div>
+          <div class="alert-time">3 min ago · Critical</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon ai-orange"><i class="ti ti-users" aria-hidden="true"></i></div>
+        <div class="alert-content">
+          <div class="alert-title">New mule account network detected</div>
+          <div class="alert-desc">Cluster of 7 accounts linked to UPI fraud complaint #2847</div>
+          <div class="alert-time">18 min ago · High</div>
+        </div>
+      </div>
+      <div class="alert-item">
+        <div class="alert-icon ai-blue"><i class="ti ti-building-bank" aria-hidden="true"></i></div>
+        <div class="alert-content">
+          <div class="alert-title">Bank escalation — Axis Bank Adyar</div>
+          <div class="alert-desc">Freeze request acknowledged, hold placed on ₹2.3L</div>
+          <div class="alert-time">41 min ago · Resolved</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid2">
+    <!-- Top predictions -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-target" aria-hidden="true"></i> Top Predicted Withdrawal Locations</div>
+        <span class="card-action" onclick="showPage('predictions')">Full analysis</span>
+      </div>
+      <div class="pred-card">
+        <div>
+          <div class="pred-location">ATM Cluster — T. Nagar, Chennai</div>
+          <div class="pred-detail">6 ATMs · 2.1km radius · Window: 14:00–16:00</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pred-prob">91%</div>
+          <div class="prob-label">probability</div>
+        </div>
+      </div>
+      <div class="pred-card">
+        <div>
+          <div class="pred-location">SBI Branch — Anna Nagar West</div>
+          <div class="pred-detail">3 ATMs · Branch counter · Window: 11:30–13:00</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pred-prob" style="color:#e65100">78%</div>
+          <div class="prob-label">probability</div>
+        </div>
+      </div>
+      <div class="pred-card">
+        <div>
+          <div class="pred-location">HDFC ATM Row — Vadapalani</div>
+          <div class="pred-detail">4 ATMs · 0.8km stretch · Window: 09:00–10:30</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pred-prob" style="color:#f57f17">63%</div>
+          <div class="prob-label">probability</div>
+        </div>
+      </div>
+      <div class="pred-card">
+        <div>
+          <div class="pred-location">Cash-on-Delivery Hub — Tambaram</div>
+          <div class="pred-detail">Dark net shop pickup · Window: 18:00–20:00</div>
+        </div>
+        <div style="text-align:right">
+          <div class="pred-prob" style="color:#f57f17">57%</div>
+          <div class="prob-label">probability</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Recent activity -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-history" aria-hidden="true"></i> Activity Timeline</div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:#c62828"></div>
+        <div class="tl-content">
+          <div class="tl-title">Complaint #C-2024-0891 filed</div>
+          <div class="tl-desc">UPI fraud · ₹85,000 · Victim: Meena S.</div>
+          <div class="tl-time">09:12 AM</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:#1a6ab5"></div>
+        <div class="tl-content">
+          <div class="tl-title">ML model generated prediction</div>
+          <div class="tl-desc">3 hotspots identified from complaint cluster</div>
+          <div class="tl-time">09:13 AM</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:#e65100"></div>
+        <div class="tl-content">
+          <div class="tl-title">Freeze order dispatched</div>
+          <div class="tl-desc">NPCI Golden Hour API · Account XXXX4821</div>
+          <div class="tl-time">09:15 AM</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:#2e7d32"></div>
+        <div class="tl-content">
+          <div class="tl-title">Intervention team deployed</div>
+          <div class="tl-desc">2 officers · T. Nagar ATM cluster</div>
+          <div class="tl-time">09:28 AM</div>
+        </div>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-dot" style="background:#2e7d32"></div>
+        <div class="tl-content">
+          <div class="tl-title">₹64L frozen successfully</div>
+          <div class="tl-desc">Axis Bank confirmed hold · FIR lodged</div>
+          <div class="tl-time">10:41 AM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Crime type breakdown -->
+  <div class="grid3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-chart-donut" aria-hidden="true"></i> Fraud Type Distribution</div>
+      </div>
+      <div style="position:relative;height:150px">
+        <canvas id="donutChart" role="img" aria-label="Donut chart of fraud types. UPI 38%, SIM swap 22%, OTP phishing 19%, investment scam 13%, other 8%.">UPI 38%, SIM swap 22%, OTP phishing 19%, investment scam 13%, other 8%.</canvas>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:11px">
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#1a6ab5;flex-shrink:0"></span>UPI 38%</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#c62828;flex-shrink:0"></span>SIM Swap 22%</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#e65100;flex-shrink:0"></span>OTP 19%</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#2e7d32;flex-shrink:0"></span>Investment 13%</span>
+        <span style="display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:#888;flex-shrink:0"></span>Other 8%</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-clock" aria-hidden="true"></i> Withdrawal Time Heatmap</div>
+      </div>
+      <div id="heatmap" style="display:grid;grid-template-columns:repeat(12,1fr);gap:3px;padding:4px 0"></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--color-text-tertiary);margin-top:6px">
+        <span>6AM</span><span>12PM</span><span>6PM</span><span>12AM</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-cpu" aria-hidden="true"></i> Model Accuracy</div>
+      </div>
+      <div class="accuracy-row">
+        <div><div class="acc-label">Location prediction</div><div class="acc-bar"><div class="acc-fill" style="width:87%"></div></div></div>
+        <div class="acc-pct" style="color:#1a6ab5">87%</div>
+      </div>
+      <div class="accuracy-row">
+        <div><div class="acc-label">Time window</div><div class="acc-bar"><div class="acc-fill" style="width:79%"></div></div></div>
+        <div class="acc-pct" style="color:#1a6ab5">79%</div>
+      </div>
+      <div class="accuracy-row">
+        <div><div class="acc-label">Mule identification</div><div class="acc-bar"><div class="acc-fill" style="width:92%"></div></div></div>
+        <div class="acc-pct" style="color:#2e7d32">92%</div>
+      </div>
+      <div class="accuracy-row">
+        <div><div class="acc-label">Amount estimate</div><div class="acc-bar"><div class="acc-fill" style="width:71%"></div></div></div>
+        <div class="acc-pct" style="color:#e65100">71%</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPLAINTS PAGE -->
+<div id="page-complaints" class="hidden">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Complaint Registry</div>
+      <div class="page-sub">247 active complaints — sorted by risk score</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn"><i class="ti ti-filter" aria-hidden="true"></i> Filter</button>
+      <button class="btn"><i class="ti ti-download" aria-hidden="true"></i> Export</button>
+      <button class="btn btn-primary" onclick="showPage('submit')"><i class="ti ti-plus" aria-hidden="true"></i> File Complaint</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Complaint ID</th>
+            <th>Date/Time</th>
+            <th>Victim</th>
+            <th>Type</th>
+            <th>Amount (₹)</th>
+            <th>Risk Score</th>
+            <th>Status</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="complaintsTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- THREAT MAP PAGE -->
+<div id="page-map" class="hidden">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Predictive Threat Map</div>
+      <div class="page-sub">Real-time withdrawal hotspot predictions across Tamil Nadu</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn"><i class="ti ti-layers-subtract" aria-hidden="true"></i> Layers</button>
+      <button class="btn btn-primary"><i class="ti ti-focus-2" aria-hidden="true"></i> Focus on Hotspots</button>
+    </div>
+  </div>
+  <div class="grid2">
+    <div class="card" style="grid-column:1/-1">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-map" aria-hidden="true"></i> Hotspot Intelligence Map</div>
+        <span style="font-size:11px;color:var(--color-text-secondary)">Chennai Metropolitan Area · Last updated 2 min ago</span>
+      </div>
+      <div class="map-area">
+        <div class="map-grid"></div>
+        <div class="map-overlay" id="mapSvg"></div>
+        <div class="map-legend">
+          <div style="font-size:11px;font-weight:500;color:#8ab4d4;margin-bottom:4px">Risk Level</div>
+          <div class="legend-row"><div class="legend-dot" style="background:#ef5350"></div><span>Critical (&gt;80%)</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#ff9800"></div><span>High (60–80%)</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#ffeb3b"></div><span>Medium (40–60%)</span></div>
+          <div class="legend-row"><div class="legend-dot" style="background:#4caf50"></div><span>Low (&lt;40%)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-map-pin" aria-hidden="true"></i> T. Nagar Cluster</div></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Risk:</span> <span style="color:#c62828;font-weight:500">91% Critical</span></div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">ATMs:</span> 6 machines</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Window:</span> 14:00 – 16:00</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Linked to:</span> 4 complaints</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Est. amount:</span> ₹3.2L</div>
+      </div>
+      <button class="btn btn-danger" style="width:100%;margin-top:12px;font-size:12px"><i class="ti ti-send" aria-hidden="true"></i> Deploy Team</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-map-pin" aria-hidden="true"></i> Anna Nagar West</div></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Risk:</span> <span style="color:#e65100;font-weight:500">78% High</span></div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">ATMs:</span> 3 + branch counter</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Window:</span> 11:30 – 13:00</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Linked to:</span> 2 complaints</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Est. amount:</span> ₹1.8L</div>
+      </div>
+      <button class="btn btn-danger" style="width:100%;margin-top:12px;font-size:12px"><i class="ti ti-send" aria-hidden="true"></i> Deploy Team</button>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-map-pin" aria-hidden="true"></i> Vadapalani HDFC Row</div></div>
+      <div style="font-size:12px;color:var(--color-text-secondary);line-height:1.8">
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Risk:</span> <span style="color:#f57f17;font-weight:500">63% Medium</span></div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">ATMs:</span> 4 machines</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Window:</span> 09:00 – 10:30</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Linked to:</span> 3 complaints</div>
+        <div><span style="font-weight:500;color:var(--color-text-primary)">Est. amount:</span> ₹90K</div>
+      </div>
+      <button class="btn" style="width:100%;margin-top:12px;font-size:12px"><i class="ti ti-eye" aria-hidden="true"></i> Monitor</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREDICTIONS PAGE -->
+<div id="page-predictions" class="hidden">
+  <div class="page-header">
+    <div>
+      <div class="page-title">AI Prediction Engine</div>
+      <div class="page-sub">ML-powered cash withdrawal location forecasting</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="runPrediction()"><i class="ti ti-brain" aria-hidden="true"></i> Run Prediction ↗</button>
+    </div>
+  </div>
+  
+  <!-- Architecture steps -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header"><div class="card-title"><i class="ti ti-sitemap" aria-hidden="true"></i> Prediction Pipeline</div></div>
+    <div class="step-row">
+      <div class="step done"><div class="step-num"><i class="ti ti-check" style="font-size:13px" aria-hidden="true"></i></div><div class="step-label">Complaint ingestion</div></div>
+      <div class="step done"><div class="step-num"><i class="ti ti-check" style="font-size:13px" aria-hidden="true"></i></div><div class="step-label">Feature extraction</div></div>
+      <div class="step done"><div class="step-num"><i class="ti ti-check" style="font-size:13px" aria-hidden="true"></i></div><div class="step-label">Mule profiling</div></div>
+      <div class="step active"><div class="step-num">4</div><div class="step-label">Hotspot prediction</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-label">Alert generation</div></div>
+      <div class="step"><div class="step-num">6</div><div class="step-label">Deployment</div></div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-sliders" aria-hidden="true"></i> Model Features</div></div>
+      <div style="font-size:12px;line-height:2">
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span style="color:var(--color-text-secondary)">Complaint location cluster</span><span style="font-weight:500">Weight: 0.32</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span style="color:var(--color-text-secondary)">Transaction time patterns</span><span style="font-weight:500">Weight: 0.24</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span style="color:var(--color-text-secondary)">Mule account home address</span><span style="font-weight:500">Weight: 0.19</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span style="color:var(--color-text-secondary)">Bank branch proximity</span><span style="font-weight:500">Weight: 0.12</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span style="color:var(--color-text-secondary)">Historical mule behavior</span><span style="font-weight:500">Weight: 0.08</span></div>
+        <div style="display:flex;justify-content:space-between;padding:4px 0"><span style="color:var(--color-text-secondary)">Network centrality</span><span style="font-weight:500">Weight: 0.05</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Prediction Confidence by Zone</div></div>
+      <div style="position:relative;height:180px">
+        <canvas id="predChart" role="img" aria-label="Horizontal bar chart showing prediction confidence per zone">T. Nagar 91%, Anna Nagar 78%, Vadapalani 63%, Tambaram 57%, Porur 44%, Ambattur 38%.</canvas>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card" style="margin-top:16px">
+    <div class="card-header"><div class="card-title"><i class="ti ti-list-details" aria-hidden="true"></i> AI-generated Intelligence Report</div></div>
+    <div id="ai-output" style="font-size:13px;line-height:1.8;color:var(--color-text-secondary);background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:14px;min-height:60px">
+      Click "Run Prediction ↗" above to generate an AI-powered intelligence report for the current complaint cluster...
+    </div>
+  </div>
+</div>
+
+<!-- ALERTS PAGE -->
+<div id="page-alerts" class="hidden">
+  <div class="page-header">
+    <div><div class="page-title">Alert Center</div><div class="page-sub">3 unacknowledged alerts require attention</div></div>
+    <div class="header-actions"><button class="btn btn-primary"><i class="ti ti-check-all" aria-hidden="true"></i> Acknowledge All</button></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-alert-triangle" aria-hidden="true"></i> Live Alerts</div></div>
+      <div id="alertsList"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Alert Volume (24h)</div></div>
+      <div style="position:relative;height:200px">
+        <canvas id="alertChart" role="img" aria-label="Bar chart of alert volume over 24 hours">Hourly alert counts over last 24 hours.</canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FILE COMPLAINT PAGE -->
+<div id="page-submit" class="hidden">
+  <div class="page-header">
+    <div><div class="page-title">File New Complaint</div><div class="page-sub">Complaint auto-triggers ML prediction pipeline</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card" style="grid-column:1/-1">
+      <div class="card-header"><div class="card-title"><i class="ti ti-forms" aria-hidden="true"></i> Complaint Details</div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Victim Name</label><input type="text" placeholder="Full name" id="f_name"></div>
+        <div class="form-group"><label class="form-label">Contact Number</label><input type="text" placeholder="+91 XXXXX XXXXX" id="f_phone"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fraud Type</label>
+          <select id="f_type">
+            <option>UPI Fraud</option>
+            <option>SIM Swap</option>
+            <option>OTP Phishing</option>
+            <option>Investment Scam</option>
+            <option>Lottery Fraud</option>
+            <option>Tech Support Scam</option>
+            <option>Romance Scam</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Amount Lost (₹)</label><input type="number" placeholder="0" id="f_amount"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Fraudulent UPI/Account</label><input type="text" placeholder="UPI ID or account number" id="f_acc"></div>
+        <div class="form-group"><label class="form-label">Date & Time of Incident</label><input type="datetime-local" id="f_date"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Victim District</label>
+          <select id="f_district">
+            <option>Chennai</option><option>Coimbatore</option><option>Madurai</option>
+            <option>Tiruchirappalli</option><option>Salem</option><option>Tirunelveli</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Victim Address (approx)</label><input type="text" placeholder="Area / locality" id="f_addr"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label class="form-label">Description</label><textarea placeholder="Describe how the fraud occurred..." id="f_desc"></textarea></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-primary" style="flex:1" onclick="submitComplaint()"><i class="ti ti-send" aria-hidden="true"></i> Submit & Run ML Prediction</button>
+        <button class="btn" onclick="showPage('dashboard')">Cancel</button>
+      </div>
+      <div id="submitResult" style="display:none;margin-top:12px;padding:12px;background:#e8f5e9;border-radius:var(--border-radius-md);font-size:12px;color:#1b5e20"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERVENTIONS PAGE -->
+<div id="page-interventions" class="hidden">
+  <div class="page-header">
+    <div><div class="page-title">Intervention Management</div><div class="page-sub">Active field deployments and freeze orders</div></div>
+    <div class="header-actions"><button class="btn btn-primary"><i class="ti ti-plus" aria-hidden="true"></i> New Intervention</button></div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="metric-label">Teams Deployed</div><div class="metric-value">6</div><div class="metric-delta delta-dn">All active</div></div>
+    <div class="metric"><div class="metric-label">Freeze Orders Sent</div><div class="metric-value">23</div><div class="metric-delta delta-dn">18 confirmed</div></div>
+    <div class="metric"><div class="metric-label">Arrests Made</div><div class="metric-value">4</div><div class="metric-delta delta-dn">This week</div></div>
+    <div class="metric"><div class="metric-label">Recovery Rate</div><div class="metric-value">34%</div><div class="metric-delta delta-dn">Above avg</div></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><div class="card-title"><i class="ti ti-list" aria-hidden="true"></i> Active Interventions</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Location</th><th>Team</th><th>Status</th><th>Deployed At</th><th>Outcome</th></tr></thead>
+        <tbody id="interventionsTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- NETWORK PAGE -->
+<div id="page-network" class="hidden">
+  <div class="page-header">
+    <div><div class="page-title">Money Mule Network Analysis</div><div class="page-sub">Graph-based fraud network visualization</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-network" aria-hidden="true"></i> Detected Mule Clusters</div></div>
+      <div style="font-size:12px">
+        <div style="padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:500">Cluster A — Chennai Central</span><span class="severity sev-critical">Active</span></div>
+          <div style="color:var(--color-text-secondary)">12 accounts · 3 coordinators · ₹47L processed</div>
+        </div>
+        <div style="padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:500">Cluster B — Tambaram / Chromepet</span><span class="severity sev-high">Active</span></div>
+          <div style="color:var(--color-text-secondary)">7 accounts · 1 coordinator · ₹18L processed</div>
+        </div>
+        <div style="padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:500">Cluster C — Coimbatore</span><span class="severity sev-medium">Suspected</span></div>
+          <div style="color:var(--color-text-secondary)">4 accounts · unknown coordinator · ₹6L processed</div>
+        </div>
+        <div style="padding:10px 0">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-weight:500">Cluster D — Online Only</span><span class="severity sev-low">Dormant</span></div>
+          <div style="color:var(--color-text-secondary)">9 accounts · 2 coordinators · ₹23L processed</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Mule Account Activity</div></div>
+      <div style="position:relative;height:200px">
+        <canvas id="networkChart" role="img" aria-label="Bar chart of mule account transaction volumes by cluster">Cluster activity volumes across A, B, C, D.</canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORTS PAGE -->
+<div id="page-reports" class="hidden">
+  <div class="page-header">
+    <div><div class="page-title">Intelligence Reports</div><div class="page-sub">Auto-generated actionable reports for law enforcement</div></div>
+    <div class="header-actions"><button class="btn btn-primary"><i class="ti ti-download" aria-hidden="true"></i> Export PDF</button></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-file-text" aria-hidden="true"></i> Available Reports</div></div>
+      <div id="reportsList"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Monthly Recovery Trend</div></div>
+      <div style="position:relative;height:200px">
+        <canvas id="recoveryChart" role="img" aria-label="Bar chart showing monthly fund recovery figures">Monthly recovery amounts in lakhs over 6 months.</canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODEL CONFIG PAGE -->
+<div id="page-model" class="hidden">
+  <div class="page-header">
+    <div><div class="page-title">Model Configuration</div><div class="page-sub">Tune the predictive analytics engine</div></div>
+    <div class="header-actions"><button class="btn btn-primary"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save Config</button></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-sliders" aria-hidden="true"></i> Feature Weights</div></div>
+      <div id="sliderContainer"></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-adjustments" aria-hidden="true"></i> Model Parameters</div></div>
+      <div class="form-group" style="margin-bottom:12px"><label class="form-label">Algorithm</label>
+        <select><option>XGBoost (default)</option><option>Random Forest</option><option>LSTM Neural Net</option><option>Ensemble (all)</option></select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label class="form-label">Prediction Window</label>
+        <select><option>2 hours</option><option>4 hours</option><option>8 hours</option><option>24 hours</option></select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label class="form-label">Min Confidence Threshold</label>
+        <select><option>50%</option><option>60%</option><option>70%</option><option>80%</option></select>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label class="form-label">Geofence Radius</label>
+        <select><option>500m</option><option>1km</option><option>2km</option><option>5km</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Training data refresh</label>
+        <select><option>Every 6 hours</option><option>Daily</option><option>Weekly</option><option>Manual</option></select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="page-settings" class="hidden">
+  <div class="page-header">
+    <div><div class="page-title">System Settings</div></div>
+    <div class="header-actions"><button class="btn btn-primary"><i class="ti ti-device-floppy" aria-hidden="true"></i> Save</button></div>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-bell" aria-hidden="true"></i> Notification Settings</div></div>
+      <div style="font-size:13px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span>SMS Alerts</span><input type="checkbox" checked></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span>Email Reports</span><input type="checkbox" checked></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span>WhatsApp Integration</span><input type="checkbox"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span>Dashboard Sounds</span><input type="checkbox"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title"><i class="ti ti-plug" aria-hidden="true"></i> API Integrations</div></div>
+      <div style="font-size:13px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span>NPCI Golden Hour API</span><span class="status-pill sp-resolved">Connected</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span>NCRP Portal</span><span class="status-pill sp-resolved">Connected</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary)"><span>I4C Cybercrime API</span><span class="status-pill sp-resolved">Connected</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0"><span>RBI CERSAI</span><span class="status-pill sp-investigating">Pending</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const pages = ['dashboard','complaints','map','predictions','alerts','submit','interventions','network','reports','model','settings'];
+
+function showPage(name) {
+  pages.forEach(p => {
+    const el = document.getElementById('page-'+p);
+    if (el) el.classList.toggle('hidden', p !== name);
+  });
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(el => {
+    if (el.textContent.toLowerCase().includes(name === 'submit' ? 'complaint' : name === 'map' ? 'threat' : name)) {
+      el.classList.add('active');
+    }
+  });
+  initPage(name);
+}
+
+function initPage(name) {
+  if (name === 'dashboard') initDashboard();
+  if (name === 'complaints') initComplaints();
+  if (name === 'alerts') initAlerts();
+  if (name === 'interventions') initInterventions();
+  if (name === 'reports') initReports();
+  if (name === 'model') initModel();
+  if (name === 'network') initNetwork();
+  if (name === 'predictions') initPredictions();
+}
+
+let chartsInit = {};
+
+function initDashboard() {
+  if (chartsInit.dashboard) return;
+  chartsInit.dashboard = true;
+  const trend = [28,32,25,41,36,43,47];
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  new Chart(document.getElementById('trendChart'), {
+    type: 'line',
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'Complaints',
+        data: trend,
+        borderColor: '#1a6ab5',
+        backgroundColor: 'rgba(26,106,181,0.08)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 3,
+        pointBackgroundColor: '#1a6ab5'
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: 'rgba(128,128,128,0.1)' }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+  new Chart(document.getElementById('donutChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['UPI','SIM Swap','OTP','Investment','Other'],
+      datasets: [{
+        data: [38,22,19,13,8],
+        backgroundColor: ['#1a6ab5','#c62828','#e65100','#2e7d32','#888'],
+        borderWidth: 0
+      }]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '65%' }
+  });
+  const heatmap = document.getElementById('heatmap');
+  const heat = [2,1,0,0,1,3,8,12,10,9,11,14,10,8,9,13,11,7,5,4,3,2,1,1];
+  const max = Math.max(...heat);
+  heatmap.innerHTML = heat.map(v => {
+    const pct = v/max;
+    const alpha = Math.round(pct * 200);
+    return `<div style="height:28px;border-radius:3px;background:rgba(198,40,40,${(pct*0.85+0.05).toFixed(2)})" title="${v} withdrawals"></div>`;
+  }).join('');
+}
+
+const complaints = [
+  {id:'C-2024-0891',date:'2024-06-08 09:12',victim:'Meena Sundaram',type:'UPI Fraud',amount:'₹85,000',risk:91,status:'open'},
+  {id:'C-2024-0890',date:'2024-06-08 08:44',victim:'Rajesh Kumar',type:'SIM Swap',amount:'₹1,20,000',risk:84,status:'investigating'},
+  {id:'C-2024-0889',date:'2024-06-08 07:30',victim:'Priya Nair',type:'OTP Phishing',amount:'₹32,500',risk:67,status:'investigating'},
+  {id:'C-2024-0888',date:'2024-06-07 22:15',victim:'Suresh M.',type:'Investment Scam',amount:'₹4,50,000',risk:58,status:'open'},
+  {id:'C-2024-0887',date:'2024-06-07 19:40',victim:'Kavitha R.',type:'UPI Fraud',amount:'₹15,000',risk:72,status:'resolved'},
+  {id:'C-2024-0886',date:'2024-06-07 16:22',victim:'Anand S.',type:'Lottery Fraud',amount:'₹8,000',risk:31,status:'resolved'},
+  {id:'C-2024-0885',date:'2024-06-07 14:55',victim:'Deepa L.',type:'Tech Support',amount:'₹2,10,000',risk:89,status:'open'},
+];
+
+function riskColor(r) {
+  if (r>=80) return '#c62828';
+  if (r>=60) return '#e65100';
+  if (r>=40) return '#f57f17';
+  return '#2e7d32';
+}
+
+function initComplaints() {
+  const tb = document.getElementById('complaintsTable');
+  if (!tb) return;
+  const sm = {open:'sp-open',investigating:'sp-investigating',resolved:'sp-resolved',pending:'sp-pending'};
+  tb.innerHTML = complaints.map(c => `
+    <tr>
+      <td style="font-weight:500;font-size:11px">${c.id}</td>
+      <td style="font-size:11px;color:var(--color-text-secondary)">${c.date}</td>
+      <td>${c.victim}</td>
+      <td>${c.type}</td>
+      <td style="font-weight:500">${c.amount}</td>
+      <td>
+        <div class="risk-bar-wrap">
+          <div class="risk-bar"><div class="risk-fill" style="width:${c.risk}%;background:${riskColor(c.risk)}"></div></div>
+          <span style="font-size:11px;font-weight:500;color:${riskColor(c.risk)};min-width:28px">${c.risk}</span>
+        </div>
+      </td>
+      <td><span class="status-pill ${sm[c.status]}">${c.status}</span></td>
+      <td><button class="btn" style="font-size:11px;padding:4px 8px" onclick="sendPrompt('Analyze complaint ${c.id} for ${c.victim} and generate detailed prediction report')">Analyze ↗</button></td>
+    </tr>
+  `).join('');
+}
+
+function initAlerts() {
+  const alerts = [
+    {icon:'ti-map-pin',cls:'ai-red',title:'Critical: T. Nagar ATM cluster',desc:'91% withdrawal probability in 2h. 6 ATMs at risk. Deploy team immediately.',time:'3 min ago',sev:'Critical'},
+    {icon:'ti-users',cls:'ai-orange',title:'High: New mule network — 7 accounts',desc:'Graph analysis links accounts to complaint #C-2024-0891. Freeze recommended.',time:'18 min ago',sev:'High'},
+    {icon:'ti-building-bank',cls:'ai-blue',title:'Info: Bank hold confirmed — Axis Adyar',desc:'₹2.3L frozen pending investigation. FIR filed at Adyar PS.',time:'41 min ago',sev:'Info'},
+    {icon:'ti-alert-triangle',cls:'ai-orange',title:'High: Vadapalani pattern match',desc:'Transaction timestamps match known mule behavioral signature from prior case.',time:'1h ago',sev:'High'},
+  ];
+  const al = document.getElementById('alertsList');
+  if (!al) return;
+  al.innerHTML = alerts.map(a => `
+    <div class="alert-item">
+      <div class="alert-icon ${a.cls}"><i class="ti ${a.icon}" aria-hidden="true"></i></div>
+      <div class="alert-content">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-desc">${a.desc}</div>
+        <div class="alert-time">${a.time} · ${a.sev}</div>
+      </div>
+    </div>`).join('');
+  if (chartsInit.alertChart) return;
+  chartsInit.alertChart = true;
+  const h = Array.from({length:24},(_,i)=>Math.floor(Math.random()*8+1));
+  new Chart(document.getElementById('alertChart'), {
+    type:'bar',
+    data:{ labels:Array.from({length:24},(_,i)=>i+':00'), datasets:[{data:h,backgroundColor:'#1a6ab5',borderRadius:2}] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9},maxRotation:0}}, y:{grid:{color:'rgba(128,128,128,0.1)'}} } }
+  });
+}
+
+function initInterventions() {
+  const tb = document.getElementById('interventionsTable');
+  if (!tb) return;
+  const data = [
+    {id:'INT-089',loc:'T. Nagar ATM Cluster',team:'Team Alpha (2 officers)',status:'Active',time:'09:28 AM',outcome:'On scene'},
+    {id:'INT-088',loc:'Anna Nagar SBI Branch',team:'Team Beta (3 officers)',status:'Active',time:'08:55 AM',outcome:'Monitoring'},
+    {id:'INT-087',loc:'Vadapalani HDFC Row',team:'Team Gamma (1 officer)',status:'Active',time:'08:10 AM',outcome:'Monitoring'},
+    {id:'INT-086',loc:'Tambaram Cash Hub',team:'Team Delta (2 officers)',status:'Complete',time:'Yesterday',outcome:'1 arrested'},
+    {id:'INT-085',loc:'Porur Bus Terminus',team:'Team Alpha',status:'Complete',time:'Yesterday',outcome:'₹42K seized'},
+  ];
+  const sm = {Active:'sp-investigating',Complete:'sp-resolved'};
+  tb.innerHTML = data.map(r=>`
+    <tr>
+      <td style="font-size:11px;font-weight:500">${r.id}</td>
+      <td>${r.loc}</td>
+      <td style="font-size:12px">${r.team}</td>
+      <td><span class="status-pill ${sm[r.status]}">${r.status}</span></td>
+      <td style="font-size:11px;color:var(--color-text-secondary)">${r.time}</td>
+      <td style="font-size:12px">${r.outcome}</td>
+    </tr>`).join('');
+}
+
+function initReports() {
+  const rpts = [
+    {name:'Daily Intelligence Brief — 08 Jun 2024',type:'Auto-generated',time:'09:00 AM'},
+    {name:'Hotspot Prediction Report — T. Nagar',type:'ML Generated',time:'09:13 AM'},
+    {name:'Mule Network Analysis — Cluster A',type:'Manual',time:'Yesterday'},
+    {name:'Weekly Fund Recovery Summary',type:'Auto-generated',time:'Mon 08:00'},
+    {name:'FIR Dossier — Complaint #C-2024-0891',type:'Case Report',time:'09:15 AM'},
+  ];
+  const rl = document.getElementById('reportsList');
+  if (!rl) return;
+  rl.innerHTML = rpts.map(r=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:0.5px solid var(--color-border-tertiary)">
+      <div>
+        <div style="font-size:12px;font-weight:500">${r.name}</div>
+        <div style="font-size:11px;color:var(--color-text-secondary)">${r.type} · ${r.time}</div>
+      </div>
+      <button class="btn" style="font-size:11px;padding:4px 10px"><i class="ti ti-download" aria-hidden="true"></i> PDF</button>
+    </div>`).join('');
+  if (chartsInit.recoveryChart) return;
+  chartsInit.recoveryChart = true;
+  new Chart(document.getElementById('recoveryChart'), {
+    type:'bar',
+    data:{
+      labels:['Jan','Feb','Mar','Apr','May','Jun'],
+      datasets:[{label:'Recovered (₹L)',data:[42,58,35,71,64,89],backgroundColor:'#2e7d32',borderRadius:3}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{callback:v=>v+'L'}}}}
+  });
+}
+
+function initModel() {
+  const sc = document.getElementById('sliderContainer');
+  if (!sc || sc.innerHTML) return;
+  const features = [
+    {label:'Complaint cluster weight',val:32},
+    {label:'Time pattern weight',val:24},
+    {label:'Mule address weight',val:19},
+    {label:'Bank proximity weight',val:12},
+    {label:'Historical behavior',val:8},
+    {label:'Network centrality',val:5},
+  ];
+  sc.innerHTML = features.map((f,i)=>`
+    <div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--color-text-secondary)">${f.label}</span>
+        <span id="sv${i}" style="font-weight:500">${f.val}%</span>
+      </div>
+      <input type="range" min="0" max="100" step="1" value="${f.val}" oninput="document.getElementById('sv${i}').textContent=this.value+'%'">
+    </div>`).join('');
+}
+
+function initNetwork() {
+  if (chartsInit.networkChart) return;
+  chartsInit.networkChart = true;
+  new Chart(document.getElementById('networkChart'), {
+    type:'bar',
+    data:{
+      labels:['Cluster A','Cluster B','Cluster C','Cluster D'],
+      datasets:[{label:'₹ Processed (L)',data:[47,18,6,23],backgroundColor:['#c62828','#e65100','#f57f17','#888'],borderRadius:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>v+'L'}}}}
+  });
+}
+
+function initPredictions() {
+  if (chartsInit.predChart) return;
+  chartsInit.predChart = true;
+  new Chart(document.getElementById('predChart'), {
+    type:'bar',
+    data:{
+      labels:['T. Nagar','Anna Nagar','Vadapalani','Tambaram','Porur','Ambattur'],
+      datasets:[{
+        label:'Confidence %',
+        data:[91,78,63,57,44,38],
+        backgroundColor:['#c62828','#e65100','#f57f17','#f57f17','#2e7d32','#2e7d32'],
+        borderRadius:3
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{max:100,grid:{color:'rgba(128,128,128,0.1)'},ticks:{callback:v=>v+'%'}},
+        y:{grid:{display:false}}
+      }
+    }
+  });
+}
+
+function runPrediction() {
+  const box = document.getElementById('ai-output');
+  box.style.color = 'var(--color-text-tertiary)';
+  box.textContent = 'Running ML pipeline...';
+  sendPrompt('Generate a detailed predictive intelligence report for this cybercrime complaint cluster. Include: top 3 predicted cash withdrawal locations with coordinates, estimated time windows, recommended intervention tactics, mule account patterns detected, and priority action items for field teams. Format as an actionable intelligence brief.');
+}
+
+function submitComplaint() {
+  const name = document.getElementById('f_name').value;
+  const amount = document.getElementById('f_amount').value;
+  const type = document.getElementById('f_type').value;
+  if (!name || !amount) {
+    alert('Please fill victim name and amount.');
+    return;
+  }
+  const res = document.getElementById('submitResult');
+  res.style.display = 'block';
+  const id = 'C-2024-' + (Math.floor(Math.random()*900)+100);
+  res.innerHTML = `<strong>✓ Complaint ${id} filed successfully.</strong><br>ML prediction pipeline triggered. Hotspot analysis will be ready in ~60 seconds. Suspect account flagged with NPCI for golden hour freeze.`;
+}
+
+initDashboard();
+</script>
+</body>
+</html>

@@ -1,0 +1,1848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CyberShield Admin Portal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy: #0f1e33;
+  --navy-mid: #1a2e4a;
+  --navy-light: #243d5f;
+  --blue: #1a6ab5;
+  --blue-light: #e3f2fd;
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #f7f9fc;
+  --border: #e2e8f0;
+  --border-light: #edf2f7;
+  --text: #1a2535;
+  --text2: #4a5568;
+  --text3: #8795a8;
+  --red: #c62828; --red-bg: #fdecea;
+  --orange: #e65100; --orange-bg: #fff3e0;
+  --yellow: #f57f17; --yellow-bg: #fff9c4;
+  --green: #2e7d32; --green-bg: #e8f5e9;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+
+/* ── LAYOUT ── */
+.app { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 240px; flex-shrink: 0;
+  background: var(--navy);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; bottom: 0;
+  z-index: 200;
+  overflow-y: auto;
+}
+.sidebar-brand {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-logo {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: linear-gradient(135deg, #1a6ab5, #0d47a1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; color: #7eb9f5; flex-shrink: 0;
+}
+.brand-name { font-size: 13px; font-weight: 600; color: #e8f0f8; line-height: 1.2; }
+.brand-tag { font-size: 10px; color: #8ab4d4; font-weight: 400; }
+.admin-pill {
+  margin: 12px 20px 4px;
+  background: rgba(26,106,181,0.18);
+  border: 1px solid rgba(26,106,181,0.3);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: #7eb9f5;
+}
+.admin-pill i { font-size: 13px; }
+.admin-pill strong { font-weight: 600; font-size: 12px; color: #a8d4ff; }
+
+.nav-group { padding: 12px 0 4px; }
+.nav-group-label {
+  font-size: 9.5px; font-weight: 600;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  padding: 0 20px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px;
+  font-size: 13px; color: rgba(255,255,255,0.55);
+  cursor: pointer; transition: all 0.15s;
+  border-left: 3px solid transparent;
+  user-select: none; position: relative;
+}
+.nav-item:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.05); }
+.nav-item.active { color: #7eb9f5; border-left-color: #1a6ab5; background: rgba(26,106,181,0.12); font-weight: 500; }
+.nav-item i { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+.nav-badge {
+  margin-left: auto; font-size: 10px; font-weight: 600;
+  background: var(--red); color: #fff;
+  padding: 1px 6px; border-radius: 10px; min-width: 18px; text-align: center;
+}
+.nav-badge.blue { background: var(--blue); }
+.sidebar-footer {
+  margin-top: auto; padding: 14px 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  font-size: 11px; color: rgba(255,255,255,0.3);
+}
+.sidebar-footer strong { color: rgba(255,255,255,0.5); font-weight: 500; }
+
+/* ── MAIN ── */
+.main { margin-left: 240px; flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow);
+}
+.topbar-left { display: flex; align-items: center; gap: 14px; }
+.page-breadcrumb { font-size: 12px; color: var(--text3); }
+.page-breadcrumb span { color: var(--text2); font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.status-badge {
+  font-size: 11px; font-weight: 500;
+  background: var(--green-bg); color: var(--green);
+  padding: 4px 10px; border-radius: 20px;
+  display: flex; align-items: center; gap: 5px;
+}
+.live-dot { width: 6px; height: 6px; background: #43a047; border-radius: 50%; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+.icon-btn {
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 14px; transition: all 0.15s;
+  position: relative;
+}
+.icon-btn:hover { background: var(--surface2); color: var(--text); }
+.notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 7px; height: 7px; background: var(--red); border-radius: 50%;
+  border: 1.5px solid var(--surface);
+}
+.admin-avatar {
+  width: 34px; height: 34px; border-radius: var(--radius-sm);
+  background: var(--navy); color: #7eb9f5;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+
+/* ── CONTENT ── */
+.content { padding: 24px 28px; flex: 1; }
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── PAGE HEADER ── */
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 22px; }
+.page-title { font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: -0.02em; }
+.page-sub { font-size: 12px; color: var(--text3); margin-top: 3px; }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+/* ── BUTTONS ── */
+.btn {
+  font-size: 12.5px; font-weight: 500;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text2); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn:hover { background: var(--surface2); color: var(--text); }
+.btn-primary { background: var(--navy); color: #e8f0f8; border-color: var(--navy); }
+.btn-primary:hover { background: var(--navy-light); }
+.btn-blue { background: var(--blue); color: #fff; border-color: var(--blue); }
+.btn-blue:hover { background: #155fa0; }
+.btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
+.btn-danger:hover { background: #b71c1c; }
+.btn-success { background: var(--green); color: #fff; border-color: var(--green); }
+.btn-success:hover { background: #1b5e20; }
+.btn-sm { padding: 5px 10px; font-size: 11.5px; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.card-body { padding: 18px 20px; }
+.card-header-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+.card-title { font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 8px; }
+.card-title i { color: var(--text3); font-size: 14px; }
+.card-subtitle { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ── STATS GRID ── */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+}
+.stat-card.s-blue::before { background: var(--blue); }
+.stat-card.s-red::before { background: var(--red); }
+.stat-card.s-green::before { background: var(--green); }
+.stat-card.s-orange::before { background: var(--orange); }
+.stat-icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; margin-bottom: 14px;
+}
+.stat-icon.si-blue { background: var(--blue-light); color: var(--blue); }
+.stat-icon.si-red { background: var(--red-bg); color: var(--red); }
+.stat-icon.si-green { background: var(--green-bg); color: var(--green); }
+.stat-icon.si-orange { background: var(--orange-bg); color: var(--orange); }
+.stat-val { font-size: 28px; font-weight: 600; letter-spacing: -0.03em; color: var(--text); line-height: 1; }
+.stat-label { font-size: 11px; color: var(--text3); margin-top: 5px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+.stat-delta { font-size: 11px; margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+.d-up { color: var(--red); }
+.d-dn { color: var(--green); }
+
+/* ── GRID ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.g-6040 { display: grid; grid-template-columns: 3fr 2fr; gap: 16px; margin-bottom: 16px; }
+.g-full { grid-column: 1 / -1; }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+thead th {
+  text-align: left; padding: 10px 14px;
+  font-size: 10.5px; font-weight: 600; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.07em;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface2);
+  white-space: nowrap;
+}
+tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border-light); vertical-align: middle; color: var(--text); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover td { background: var(--surface2); }
+
+/* ── PILLS ── */
+.pill {
+  font-size: 10.5px; font-weight: 600; padding: 3px 9px; border-radius: 20px; display: inline-block; white-space: nowrap;
+}
+.p-critical { background: var(--red-bg); color: var(--red); }
+.p-high { background: var(--orange-bg); color: var(--orange); }
+.p-medium { background: var(--yellow-bg); color: var(--yellow); }
+.p-low { background: var(--green-bg); color: var(--green); }
+.p-open { background: var(--red-bg); color: var(--red); }
+.p-investigating { background: var(--orange-bg); color: var(--orange); }
+.p-resolved { background: var(--green-bg); color: var(--green); }
+.p-pending { background: var(--blue-light); color: var(--blue); }
+.p-active { background: #e8f5e9; color: #2e7d32; }
+.p-inactive { background: #f5f5f5; color: #666; }
+.p-suspended { background: var(--red-bg); color: var(--red); }
+.p-admin { background: #ede7f6; color: #5e35b1; }
+.p-analyst { background: var(--blue-light); color: var(--blue); }
+.p-officer { background: var(--green-bg); color: var(--green); }
+.p-viewer { background: #f5f5f5; color: #666; }
+
+/* ── FORMS ── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; }
+.form-label span { color: var(--red); }
+input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], select, textarea {
+  font-family: inherit; font-size: 13px;
+  padding: 8px 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text);
+  width: 100%; transition: all 0.15s;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none; border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(26,106,181,0.12);
+}
+textarea { resize: vertical; min-height: 80px; }
+.form-hint { font-size: 11px; color: var(--text3); }
+.form-section-title { font-size: 12px; font-weight: 600; color: var(--text2); padding: 14px 0 10px; border-bottom: 1px solid var(--border-light); margin-bottom: 14px; display: flex; align-items: center; gap: 7px; }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+.tab {
+  padding: 9px 18px; font-size: 13px; cursor: pointer;
+  color: var(--text3); border-bottom: 2px solid transparent;
+  margin-bottom: -1px; transition: all 0.15s; font-weight: 500;
+}
+.tab:hover { color: var(--text2); }
+.tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+/* ── TOGGLE ── */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle {
+  width: 40px; height: 22px; border-radius: 11px;
+  background: var(--border); position: relative; cursor: pointer; transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle.on { background: var(--blue); }
+.toggle::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; border-radius: 50%; background: #fff;
+  transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.toggle.on::after { left: 21px; }
+.toggle-label { font-size: 13px; color: var(--text2); }
+
+/* ── ALERT ITEMS ── */
+.alert-row {
+  display: flex; gap: 12px; padding: 12px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+.alert-row:last-child { border-bottom: none; }
+.alert-icon-box {
+  width: 36px; height: 36px; border-radius: 9px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 15px;
+}
+.aib-red { background: var(--red-bg); color: var(--red); }
+.aib-orange { background: var(--orange-bg); color: var(--orange); }
+.aib-blue { background: var(--blue-light); color: var(--blue); }
+.aib-green { background: var(--green-bg); color: var(--green); }
+.alert-row-title { font-size: 12.5px; font-weight: 500; margin-bottom: 2px; }
+.alert-row-desc { font-size: 11.5px; color: var(--text2); line-height: 1.4; }
+.alert-row-meta { font-size: 10.5px; color: var(--text3); margin-top: 3px; display: flex; align-items: center; gap: 6px; }
+
+/* ── RISK BAR ── */
+.risk-wrap { display: flex; align-items: center; gap: 7px; }
+.risk-bar { height: 5px; border-radius: 3px; width: 70px; background: var(--border); overflow: hidden; flex-shrink: 0; }
+.risk-fill { height: 100%; border-radius: 3px; }
+
+/* ── USER CARD ── */
+.user-row { display: flex; align-items: center; gap: 11px; }
+.user-avatar {
+  width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+.user-name { font-size: 13px; font-weight: 500; }
+.user-email { font-size: 11px; color: var(--text3); }
+
+/* ── PERMISSION GRID ── */
+.perm-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.perm-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--surface2);
+  font-size: 12px; cursor: pointer;
+}
+.perm-item.checked { border-color: var(--blue); background: var(--blue-light); color: var(--blue); }
+.perm-item i { font-size: 13px; }
+.perm-check { width: 16px; height: 16px; border-radius: 4px; border: 1.5px solid var(--border); margin-left: auto; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+.perm-item.checked .perm-check { background: var(--blue); border-color: var(--blue); color: #fff; font-size: 9px; }
+
+/* ── LOG ENTRY ── */
+.log-entry { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--border-light); font-size: 12px; }
+.log-entry:last-child { border-bottom: none; }
+.log-time { color: var(--text3); font-size: 11px; white-space: nowrap; min-width: 80px; }
+.log-action { color: var(--text); font-weight: 500; }
+.log-detail { color: var(--text2); margin-top: 1px; font-size: 11px; }
+.log-actor { color: var(--blue); font-size: 11px; font-weight: 500; }
+
+/* ── CONFIG ROW ── */
+.config-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 13px 0; border-bottom: 1px solid var(--border-light);
+}
+.config-row:last-child { border-bottom: none; }
+.config-label { font-size: 13px; font-weight: 500; }
+.config-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.config-control { display: flex; align-items: center; gap: 10px; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(15,30,51,0.5); backdrop-filter: blur(2px);
+  align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface); border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  width: 560px; max-width: 95vw; max-height: 90vh; overflow-y: auto;
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 22px; border-bottom: 1px solid var(--border);
+}
+.modal-title { font-size: 16px; font-weight: 600; }
+.modal-close {
+  width: 30px; height: 30px; border-radius: 6px;
+  border: none; background: var(--surface2); color: var(--text2);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 14px; transition: all 0.15s;
+}
+.modal-close:hover { background: var(--red-bg); color: var(--red); }
+.modal-body { padding: 22px; }
+.modal-footer { padding: 14px 22px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ── TOAST ── */
+.toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 600; display: flex; flex-direction: column; gap: 8px; }
+.toast {
+  background: var(--navy); color: #e8f0f8;
+  padding: 12px 16px; border-radius: 9px;
+  font-size: 13px; box-shadow: var(--shadow-md);
+  display: flex; align-items: center; gap: 10px;
+  animation: slideUp 0.3s ease;
+  max-width: 300px;
+}
+.toast.success { border-left: 4px solid var(--green); }
+.toast.error { border-left: 4px solid var(--red); }
+.toast.info { border-left: 4px solid var(--blue); }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* ── MISC ── */
+.divider { height: 1px; background: var(--border-light); margin: 16px 0; }
+.section-spacer { height: 16px; }
+.empty-state { text-align: center; padding: 48px 24px; color: var(--text3); }
+.empty-state i { font-size: 36px; margin-bottom: 12px; display: block; }
+.empty-state p { font-size: 13px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surface2); color: var(--text2);
+}
+input[type=range] { width: 100%; accent-color: var(--blue); }
+.progress-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+
+/* ── SEARCH INPUT ── */
+.search-input-wrap { position: relative; }
+.search-input-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; }
+.search-input-wrap input { padding-left: 32px; }
+
+/* ── ACTIVITY TIMELINE ── */
+.tl-item { display: flex; gap: 12px; padding: 10px 0; position: relative; }
+.tl-item:not(:last-child)::before {
+  content: ''; position: absolute; left: 6px; top: 22px; bottom: -2px; width: 1px; background: var(--border);
+}
+.tl-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; margin-top: 3px; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border); }
+.tl-text { flex: 1; min-width: 0; }
+.tl-title { font-size: 12.5px; font-weight: 500; }
+.tl-desc { font-size: 11.5px; color: var(--text2); margin-top: 1px; }
+.tl-time { font-size: 10.5px; color: var(--text3); margin-top: 2px; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-logo"><i class="fa-solid fa-shield-halved"></i></div>
+    <div>
+      <div class="brand-name">CyberShield Admin</div>
+      <div class="brand-tag">System Control Panel</div>
+    </div>
+  </div>
+
+  <div class="admin-pill">
+    <i class="fa-solid fa-user-shield"></i>
+    <div><div style="font-size:9px;opacity:0.7">Logged in as</div><strong>Supt. Arjun Ravi</strong></div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <div class="nav-item active" onclick="showPage('dashboard')"><i class="fa-solid fa-gauge-high"></i> Admin Dashboard</div>
+    <div class="nav-item" onclick="showPage('analytics')"><i class="fa-solid fa-chart-mixed"></i> Analytics & Reports</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Data Management</div>
+    <div class="nav-item" onclick="showPage('complaints')"><i class="fa-solid fa-file-circle-exclamation"></i> All Complaints <span class="nav-badge">247</span></div>
+    <div class="nav-item" onclick="showPage('alerts')"><i class="fa-solid fa-triangle-exclamation"></i> Alert Config <span class="nav-badge">3</span></div>
+    <div class="nav-item" onclick="showPage('interventions')"><i class="fa-solid fa-hand"></i> Interventions</div>
+    <div class="nav-item" onclick="showPage('mule-network')"><i class="fa-solid fa-sitemap"></i> Mule Networks</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">User Administration</div>
+    <div class="nav-item" onclick="showPage('users')"><i class="fa-solid fa-users-gear"></i> Users & Roles</div>
+    <div class="nav-item" onclick="showPage('permissions')"><i class="fa-solid fa-lock"></i> Permissions</div>
+    <div class="nav-item" onclick="showPage('audit-log')"><i class="fa-solid fa-clipboard-list"></i> Audit Log <span class="nav-badge blue">128</span></div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">System</div>
+    <div class="nav-item" onclick="showPage('model-config')"><i class="fa-solid fa-microchip"></i> ML Model Config</div>
+    <div class="nav-item" onclick="showPage('integrations')"><i class="fa-solid fa-plug"></i> Integrations</div>
+    <div class="nav-item" onclick="showPage('settings')"><i class="fa-solid fa-sliders"></i> System Settings</div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div>CyberShield v3.2.1</div>
+    <strong>Tamil Nadu Cyber Crime Unit</strong>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="page-breadcrumb">Admin Portal › <span id="breadcrumb-text">Dashboard</span></div>
+  </div>
+  <div class="topbar-right">
+    <div class="status-badge"><span class="live-dot"></span> All Systems Operational</div>
+    <div class="icon-btn" onclick="showToast('No new system alerts.','info')"><i class="fa-solid fa-bell"></i><span class="notif-dot"></span></div>
+    <div class="icon-btn" onclick="showToast('Refreshing data...','info')"><i class="fa-solid fa-arrows-rotate"></i></div>
+    <div class="admin-avatar" title="Supt. Arjun Ravi">AR</div>
+  </div>
+</div>
+
+<!-- ══ CONTENT ══ -->
+<div class="content">
+
+<!-- ────────────────────────────────────────────────
+     PAGE: ADMIN DASHBOARD
+──────────────────────────────────────────────── -->
+<div class="page active" id="page-dashboard">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Admin Dashboard</div>
+      <div class="page-sub">System health, user activity, and operational overview — updated 2 min ago</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="showToast('Data exported successfully','success')"><i class="fa-solid fa-download"></i> Export Report</button>
+      <button class="btn btn-primary" onclick="openModal('addUserModal')"><i class="fa-solid fa-user-plus"></i> Add User</button>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card s-blue">
+      <div class="stat-icon si-blue"><i class="fa-solid fa-users"></i></div>
+      <div class="stat-val">42</div>
+      <div class="stat-label">Active Users</div>
+      <div class="stat-delta d-dn"><i class="fa-solid fa-arrow-up"></i> +3 this week</div>
+    </div>
+    <div class="stat-card s-red">
+      <div class="stat-icon si-red"><i class="fa-solid fa-file-circle-exclamation"></i></div>
+      <div class="stat-val">247</div>
+      <div class="stat-label">Total Complaints</div>
+      <div class="stat-delta d-up"><i class="fa-solid fa-arrow-up"></i> +18 today</div>
+    </div>
+    <div class="stat-card s-green">
+      <div class="stat-icon si-green"><i class="fa-solid fa-shield-check"></i></div>
+      <div class="stat-val">89%</div>
+      <div class="stat-label">Intervention Success</div>
+      <div class="stat-delta d-dn"><i class="fa-solid fa-arrow-up"></i> +2% vs last week</div>
+    </div>
+    <div class="stat-card s-orange">
+      <div class="stat-icon si-orange"><i class="fa-solid fa-microchip"></i></div>
+      <div class="stat-val">98.4%</div>
+      <div class="stat-label">System Uptime</div>
+      <div class="stat-delta d-dn"><i class="fa-solid fa-check"></i> All services healthy</div>
+    </div>
+  </div>
+
+  <div class="g-6040">
+    <!-- System Health -->
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title"><i class="fa-solid fa-server"></i> System Health Monitor</div>
+        <span class="chip"><i class="fa-solid fa-circle" style="color:#43a047;font-size:8px"></i> Live</span>
+      </div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span style="color:var(--text2)">ML Prediction Engine</span><span style="font-weight:600;color:var(--green)">Healthy · 99.1%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:99%;background:var(--green)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span style="color:var(--text2)">NPCI Golden Hour API</span><span style="font-weight:600;color:var(--green)">Connected · 97.3%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:97%;background:var(--green)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span style="color:var(--text2)">Complaint Ingestion API</span><span style="font-weight:600;color:var(--blue)">Active · 95.8%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:96%;background:var(--blue)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span style="color:var(--text2)">Bank Freeze Gateway</span><span style="font-weight:600;color:var(--orange)">Degraded · 81.2%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:81%;background:var(--orange)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span style="color:var(--text2)">Hotspot Map Service</span><span style="font-weight:600;color:var(--green)">Healthy · 100%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--green)"></div></div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;"><span style="color:var(--text2)">SMS/Email Alert Service</span><span style="font-weight:600;color:var(--green)">Healthy · 98.7%</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:99%;background:var(--green)"></div></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-sm" onclick="showToast('Running diagnostics...','info')"><i class="fa-solid fa-stethoscope"></i> Run Diagnostics</button>
+          <button class="btn btn-sm btn-blue" onclick="showToast('Bank Gateway escalated to vendor','success')"><i class="fa-solid fa-wrench"></i> Fix Bank Gateway</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent admin activity -->
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent Admin Activity</div>
+        <span class="card-action" onclick="showPage('audit-log')" style="font-size:12px;color:var(--blue);cursor:pointer;">View all</span>
+      </div>
+      <div class="card-body" style="padding-top:8px;">
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#c62828"></div>
+          <div class="tl-text">
+            <div class="tl-title">User suspended — Rk.Sharma</div>
+            <div class="tl-desc">Exceeded failed login threshold</div>
+            <div class="tl-time">9:42 AM · Supt. Arjun Ravi</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#1a6ab5"></div>
+          <div class="tl-text">
+            <div class="tl-title">ML model weights updated</div>
+            <div class="tl-desc">Cluster weight raised to 34%</div>
+            <div class="tl-time">9:15 AM · Dr. Priya ML</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#2e7d32"></div>
+          <div class="tl-text">
+            <div class="tl-title">New officer onboarded</div>
+            <div class="tl-desc">Insp. Kavitha Nair — Viewer role</div>
+            <div class="tl-time">8:55 AM · Supt. Arjun Ravi</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#e65100"></div>
+          <div class="tl-text">
+            <div class="tl-title">Alert threshold changed</div>
+            <div class="tl-desc">Critical threshold lowered: 85% → 80%</div>
+            <div class="tl-time">Yesterday · Analyst Dev</div>
+          </div>
+        </div>
+        <div class="tl-item">
+          <div class="tl-dot" style="background:#1a6ab5"></div>
+          <div class="tl-text">
+            <div class="tl-title">NPCI API key rotated</div>
+            <div class="tl-desc">Scheduled monthly rotation</div>
+            <div class="tl-time">Yesterday · System</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <!-- User role distribution -->
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title"><i class="fa-solid fa-chart-pie"></i> User Role Distribution</div>
+      </div>
+      <div class="card-body">
+        <div style="position:relative;height:160px;"><canvas id="roleChart"></canvas></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;font-size:11.5px;">
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#0f1e33;display:inline-block"></span>Admin (4)</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#1a6ab5;display:inline-block"></span>Analyst (11)</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#2e7d32;display:inline-block"></span>Officer (22)</span>
+          <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:#8795a8;display:inline-block"></span>Viewer (5)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Complaint volume chart -->
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Complaint Volume (30 days)</div>
+      </div>
+      <div class="card-body">
+        <div style="position:relative;height:160px;"><canvas id="volumeChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: COMPLAINTS MANAGEMENT
+──────────────────────────────────────────────── -->
+<div class="page" id="page-complaints">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Complaint Registry — Admin View</div>
+      <div class="page-sub">Full CRUD access · 247 complaints · Showing all</div>
+    </div>
+    <div class="header-actions">
+      <div class="search-input-wrap" style="width:220px;"><i class="fa-solid fa-search"></i><input type="text" placeholder="Search by ID, victim, type…" oninput="filterComplaints(this.value)"></div>
+      <select style="width:130px;" onchange="showToast('Filter applied','info')">
+        <option>All Statuses</option>
+        <option>Open</option>
+        <option>Investigating</option>
+        <option>Resolved</option>
+        <option>Pending</option>
+      </select>
+      <button class="btn" onclick="showToast('Exported 247 complaints as CSV','success')"><i class="fa-solid fa-download"></i> Export CSV</button>
+      <button class="btn btn-primary" onclick="openModal('addComplaintModal')"><i class="fa-solid fa-plus"></i> Add Complaint</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th><input type="checkbox" onchange="toggleAll(this)"></th>
+            <th>Complaint ID</th>
+            <th>Filed</th>
+            <th>Victim</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th>Risk Score</th>
+            <th>Status</th>
+            <th>Assigned To</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="complaintsAdminTable"></tbody>
+      </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 20px;border-top:1px solid var(--border-light);">
+      <div style="font-size:12px;color:var(--text3);">Showing 1–10 of 247 complaints</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-sm">← Prev</button>
+        <button class="btn btn-sm btn-primary">1</button>
+        <button class="btn btn-sm">2</button>
+        <button class="btn btn-sm">3</button>
+        <button class="btn btn-sm">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: USERS & ROLES
+──────────────────────────────────────────────── -->
+<div class="page" id="page-users">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Users & Roles</div>
+      <div class="page-sub">42 active accounts · Manage access, roles and authentication</div>
+    </div>
+    <div class="header-actions">
+      <div class="search-input-wrap" style="width:200px;"><i class="fa-solid fa-search"></i><input type="text" placeholder="Search users…"></div>
+      <button class="btn" onclick="showToast('User list exported','success')"><i class="fa-solid fa-download"></i> Export</button>
+      <button class="btn btn-primary" onclick="openModal('addUserModal')"><i class="fa-solid fa-user-plus"></i> Add User</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'users-tab-all')">All Users (42)</div>
+    <div class="tab" onclick="switchTab(this,'users-tab-admins')">Admins (4)</div>
+    <div class="tab" onclick="switchTab(this,'users-tab-analysts')">Analysts (11)</div>
+    <div class="tab" onclick="switchTab(this,'users-tab-officers')">Officers (22)</div>
+    <div class="tab" onclick="switchTab(this,'users-tab-suspended')">Suspended (2)</div>
+  </div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Division</th>
+            <th>Last Login</th>
+            <th>Status</th>
+            <th>2FA</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="usersTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: PERMISSIONS
+──────────────────────────────────────────────── -->
+<div class="page" id="page-permissions">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Permission Management</div>
+      <div class="page-sub">Role-based access control · Configure what each role can see and do</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-success" onclick="showToast('Permissions saved successfully','success')"><i class="fa-solid fa-check"></i> Save Changes</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab(this,'perm-admin')">Admin</div>
+    <div class="tab" onclick="switchTab(this,'perm-analyst')">Analyst</div>
+    <div class="tab" onclick="switchTab(this,'perm-officer')">Officer</div>
+    <div class="tab" onclick="switchTab(this,'perm-viewer')">Viewer</div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-file-circle-exclamation"></i> Complaint Module</div></div>
+      <div class="card-body">
+        <div class="perm-grid" id="perm-complaints-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-brain"></i> Intelligence / Predictions</div></div>
+      <div class="card-body">
+        <div class="perm-grid" id="perm-intel-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-users-gear"></i> User Administration</div></div>
+      <div class="card-body">
+        <div class="perm-grid" id="perm-users-grid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-sliders"></i> System Settings</div></div>
+      <div class="card-body">
+        <div class="perm-grid" id="perm-system-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: AUDIT LOG
+──────────────────────────────────────────────── -->
+<div class="page" id="page-audit-log">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Audit Log</div>
+      <div class="page-sub">Full immutable activity trail · 128 entries today</div>
+    </div>
+    <div class="header-actions">
+      <input type="date" style="width:150px;" value="2024-06-08">
+      <select style="width:140px;">
+        <option>All Actions</option>
+        <option>Login / Logout</option>
+        <option>Data Access</option>
+        <option>Data Modification</option>
+        <option>User Management</option>
+        <option>System Config</option>
+      </select>
+      <button class="btn" onclick="showToast('Audit log exported as PDF','success')"><i class="fa-solid fa-download"></i> Export</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row">
+      <div class="card-title"><i class="fa-solid fa-shield-halved"></i> Tamper-proof Activity Record</div>
+      <span class="chip"><i class="fa-solid fa-lock" style="font-size:10px"></i> Encrypted</span>
+    </div>
+    <div class="card-body" id="auditLogBody"></div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: ML MODEL CONFIG
+──────────────────────────────────────────────── -->
+<div class="page" id="page-model-config">
+  <div class="page-header">
+    <div>
+      <div class="page-title">ML Model Configuration</div>
+      <div class="page-sub">Tune prediction weights, thresholds, and retraining schedule</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn" onclick="showToast('Reverted to last saved config','info')"><i class="fa-solid fa-rotate-left"></i> Revert</button>
+      <button class="btn btn-success" onclick="showToast('Model config saved & retraining queued','success')"><i class="fa-solid fa-check"></i> Save & Retrain</button>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-sliders"></i> Feature Weights</div></div>
+      <div class="card-body" id="featureWeightsContainer"></div>
+    </div>
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-gauge"></i> Threshold Configuration</div></div>
+      <div class="card-body">
+        <div class="config-row">
+          <div><div class="config-label">Critical alert threshold</div><div class="config-desc">Trigger critical alert above this confidence</div></div>
+          <div class="config-control"><input type="number" value="80" style="width:70px;text-align:center"> <span style="font-size:12px;color:var(--text3)">%</span></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">High alert threshold</div><div class="config-desc">Trigger high alert above this confidence</div></div>
+          <div class="config-control"><input type="number" value="60" style="width:70px;text-align:center"> <span style="font-size:12px;color:var(--text3)">%</span></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Minimum complaint cluster size</div><div class="config-desc">Min complaints to activate hotspot prediction</div></div>
+          <div class="config-control"><input type="number" value="3" style="width:70px;text-align:center"> <span style="font-size:12px;color:var(--text3)">cases</span></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Prediction time window</div><div class="config-desc">Forward time window for withdrawal prediction</div></div>
+          <div class="config-control"><input type="number" value="4" style="width:70px;text-align:center"> <span style="font-size:12px;color:var(--text3)">hours</span></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Spatial cluster radius</div><div class="config-desc">Max distance to group ATMs in one cluster</div></div>
+          <div class="config-control"><input type="number" value="2" style="width:70px;text-align:center"> <span style="font-size:12px;color:var(--text3)">km</span></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Auto-freeze above score</div><div class="config-desc">Auto-dispatch freeze request above this risk</div></div>
+          <div class="config-control"><input type="number" value="90" style="width:70px;text-align:center"> <span style="font-size:12px;color:var(--text3)">%</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-rotate"></i> Retraining Schedule</div></div>
+      <div class="card-body">
+        <div class="config-row">
+          <div><div class="config-label">Auto-retrain frequency</div><div class="config-desc">How often to retrain on new complaint data</div></div>
+          <select style="width:130px;"><option>Daily</option><option>Weekly</option><option>Monthly</option></select>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Retrain trigger (new cases)</div><div class="config-desc">Trigger retrain after N new complaints</div></div>
+          <div class="config-control"><input type="number" value="50" style="width:70px;text-align:center"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Last trained</div><div class="config-desc">Most recent model training run</div></div>
+          <span style="font-size:12px;font-weight:500;color:var(--green)">08 Jun 2024, 04:00 AM</span>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Model version</div></div>
+          <span class="chip">v3.7.2</span>
+        </div>
+        <div style="margin-top:14px;"><button class="btn btn-blue" onclick="showToast('Manual retraining started — ETA 8 min','info')"><i class="fa-solid fa-play"></i> Trigger Manual Retrain</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-chart-line"></i> Model Performance Trend</div></div>
+      <div class="card-body">
+        <div style="height:160px;"><canvas id="modelPerfChart"></canvas></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: ALERTS CONFIG
+──────────────────────────────────────────────── -->
+<div class="page" id="page-alerts">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Alert Configuration</div>
+      <div class="page-sub">Define alert rules, notification channels and escalation paths</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openModal('addAlertModal')"><i class="fa-solid fa-plus"></i> New Alert Rule</button>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-bell"></i> Active Alert Rules</div></div>
+      <div class="card-body" id="alertRulesBody"></div>
+    </div>
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-paper-plane"></i> Notification Channels</div></div>
+      <div class="card-body">
+        <div class="config-row">
+          <div><div class="config-label">SMS Alerts</div><div class="config-desc">Critical & High severity to on-duty officers</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Email Digest</div><div class="config-desc">Daily summary to supervisors</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Dashboard Push</div><div class="config-desc">Real-time alerts in portal UI</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">WhatsApp (WABA)</div><div class="config-desc">Field team alerts via WhatsApp Business</div></div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Webhook (external SIEM)</div><div class="config-desc">Forward events to external systems</div></div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="divider"></div>
+        <div class="form-group">
+          <div class="form-label">Escalation Email (Critical)</div>
+          <input type="email" value="sp.cybercrime@tnpolice.gov.in">
+        </div>
+        <div style="margin-top:10px;"><button class="btn btn-success btn-sm" onclick="showToast('Notification settings saved','success')"><i class="fa-solid fa-check"></i> Save Settings</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: INTERVENTIONS ADMIN
+──────────────────────────────────────────────── -->
+<div class="page" id="page-interventions">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Intervention Management</div>
+      <div class="page-sub">Assign teams, track deployments, log outcomes</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="openModal('addInterventionModal')"><i class="fa-solid fa-plus"></i> Create Intervention</button>
+    </div>
+  </div>
+
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat-card s-orange"><div class="stat-icon si-orange"><i class="fa-solid fa-circle-dot"></i></div><div class="stat-val">3</div><div class="stat-label">Active Now</div></div>
+    <div class="stat-card s-blue"><div class="stat-icon si-blue"><i class="fa-solid fa-calendar-check"></i></div><div class="stat-val">34</div><div class="stat-label">Today Total</div></div>
+    <div class="stat-card s-green"><div class="stat-icon si-green"><i class="fa-solid fa-check-double"></i></div><div class="stat-val">89%</div><div class="stat-label">Success Rate</div></div>
+    <div class="stat-card s-red"><div class="stat-icon si-red"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="stat-val">₹64L</div><div class="stat-label">Seized Today</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-list-check"></i> All Interventions</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>INT ID</th><th>Location</th><th>Team</th><th>Officers</th><th>Status</th><th>Deployed</th><th>Outcome</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="interventionsAdminTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: MULE NETWORK ADMIN
+──────────────────────────────────────────────── -->
+<div class="page" id="page-mule-network">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Mule Network Administration</div>
+      <div class="page-sub">Manage flagged accounts, freeze orders, and network clusters</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-danger" onclick="showToast('Bulk freeze dispatched for 7 accounts','success')"><i class="fa-solid fa-ban"></i> Bulk Freeze Selected</button>
+      <button class="btn btn-primary" onclick="openModal('addMuleModal')"><i class="fa-solid fa-plus"></i> Flag Account</button>
+    </div>
+  </div>
+
+  <div class="g3">
+    <div class="stat-card s-red"><div class="stat-icon si-red"><i class="fa-solid fa-user-slash"></i></div><div class="stat-val">94</div><div class="stat-label">Flagged Accounts</div></div>
+    <div class="stat-card s-orange"><div class="stat-icon si-orange"><i class="fa-solid fa-sitemap"></i></div><div class="stat-val">12</div><div class="stat-label">Active Clusters</div></div>
+    <div class="stat-card s-green"><div class="stat-icon si-green"><i class="fa-solid fa-snowflake"></i></div><div class="stat-val">61</div><div class="stat-label">Accounts Frozen</div></div>
+  </div>
+
+  <div class="card">
+    <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-user-slash"></i> Flagged Mule Accounts</div></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th><input type="checkbox"></th><th>Account</th><th>Bank</th><th>Cluster</th><th>₹ Processed</th><th>Linked Complaints</th><th>Freeze Status</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="muleTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: INTEGRATIONS
+──────────────────────────────────────────────── -->
+<div class="page" id="page-integrations">
+  <div class="page-header">
+    <div><div class="page-title">Integrations</div><div class="page-sub">Connect external APIs, banks, and data sources</div></div>
+    <div class="header-actions"><button class="btn btn-primary" onclick="openModal('addIntegrationModal')"><i class="fa-solid fa-plus"></i> Add Integration</button></div>
+  </div>
+
+  <div class="g2" id="integrationsGrid"></div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: ANALYTICS
+──────────────────────────────────────────────── -->
+<div class="page" id="page-analytics">
+  <div class="page-header">
+    <div><div class="page-title">Analytics & Reports</div><div class="page-sub">System-wide performance metrics and downloadable intelligence reports</div></div>
+    <div class="header-actions">
+      <select style="width:120px;"><option>Last 30 days</option><option>Last 7 days</option><option>Last 90 days</option></select>
+      <button class="btn btn-primary" onclick="showToast('Report generated and queued for download','success')"><i class="fa-solid fa-file-pdf"></i> Generate Report</button>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-chart-line"></i> Monthly Fund Recovery (₹L)</div></div>
+      <div class="card-body"><div style="height:180px;"><canvas id="recoveryAdminChart"></canvas></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-chart-bar"></i> Prediction Accuracy Over Time</div></div>
+      <div class="card-body"><div style="height:180px;"><canvas id="accChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="stat-card s-blue"><div class="stat-icon si-blue"><i class="fa-solid fa-crosshairs"></i></div><div class="stat-val">87%</div><div class="stat-label">Location Accuracy</div></div>
+    <div class="stat-card s-green"><div class="stat-icon si-green"><i class="fa-solid fa-user-secret"></i></div><div class="stat-val">92%</div><div class="stat-label">Mule ID Accuracy</div></div>
+    <div class="stat-card s-orange"><div class="stat-icon si-orange"><i class="fa-solid fa-clock"></i></div><div class="stat-val">79%</div><div class="stat-label">Time Window Accuracy</div></div>
+  </div>
+</div>
+
+
+<!-- ────────────────────────────────────────────────
+     PAGE: SETTINGS
+──────────────────────────────────────────────── -->
+<div class="page" id="page-settings">
+  <div class="page-header">
+    <div><div class="page-title">System Settings</div><div class="page-sub">Global configuration for the CyberShield platform</div></div>
+    <div class="header-actions"><button class="btn btn-success" onclick="showToast('Settings saved','success')"><i class="fa-solid fa-check"></i> Save All</button></div>
+  </div>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-building-shield"></i> Organisation</div></div>
+      <div class="card-body">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div class="form-group"><div class="form-label">Organisation Name</div><input type="text" value="Tamil Nadu Cyber Crime Unit"></div>
+          <div class="form-group"><div class="form-label">Jurisdiction</div><input type="text" value="Chennai Metropolitan Area"></div>
+          <div class="form-group"><div class="form-label">Head of Unit Email</div><input type="email" value="sp.cybercrime@tnpolice.gov.in"></div>
+          <div class="form-group"><div class="form-label">Portal Timezone</div><select><option>Asia/Kolkata (IST +05:30)</option><option>UTC</option></select></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-shield-halved"></i> Security</div></div>
+      <div class="card-body">
+        <div class="config-row">
+          <div><div class="config-label">Force 2FA for all users</div><div class="config-desc">Require OTP login for all accounts</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Session timeout</div><div class="config-desc">Auto-logout after inactivity</div></div>
+          <select style="width:100px;"><option>30 min</option><option>1 hour</option><option>4 hours</option></select>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">IP allowlist</div><div class="config-desc">Restrict admin access to specific IPs</div></div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Audit all data access</div><div class="config-desc">Log every view of complaint data</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Max failed login attempts</div></div>
+          <input type="number" value="5" style="width:70px;text-align:center;">
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-database"></i> Data Retention</div></div>
+      <div class="card-body">
+        <div class="config-row">
+          <div><div class="config-label">Complaint data retention</div><div class="config-desc">Auto-archive after period</div></div>
+          <select style="width:110px;"><option>7 years</option><option>5 years</option><option>10 years</option></select>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Audit log retention</div></div>
+          <select style="width:110px;"><option>Forever</option><option>10 years</option><option>7 years</option></select>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Auto-backup</div><div class="config-desc">Daily encrypted backup to secure storage</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Last backup</div></div>
+          <span style="font-size:12px;font-weight:500;color:var(--green)">08 Jun 2024, 02:00 AM ✓</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header-row"><div class="card-title"><i class="fa-solid fa-paint-brush"></i> Appearance</div></div>
+      <div class="card-body">
+        <div class="config-row">
+          <div><div class="config-label">Portal theme</div></div>
+          <select style="width:110px;"><option>Light</option><option>Dark</option><option>System</option></select>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Dashboard refresh interval</div></div>
+          <select style="width:110px;"><option>2 minutes</option><option>5 minutes</option><option>30 seconds</option></select>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Show risk scores</div></div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div class="config-row">
+          <div><div class="config-label">Compact table view</div></div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /app -->
+
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add User Modal -->
+<div class="modal-overlay" id="addUserModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add New User</div>
+      <button class="modal-close" onclick="closeModal('addUserModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-section-title"><i class="fa-solid fa-user"></i> Personal Details</div>
+      <div class="form-grid" style="gap:12px;margin-bottom:12px;">
+        <div class="form-group"><div class="form-label">Full Name <span>*</span></div><input type="text" placeholder="Insp. Full Name"></div>
+        <div class="form-group"><div class="form-label">Badge / Employee ID <span>*</span></div><input type="text" placeholder="TN-CYBER-0123"></div>
+        <div class="form-group"><div class="form-label">Email <span>*</span></div><input type="email" placeholder="name@tnpolice.gov.in"></div>
+        <div class="form-group"><div class="form-label">Phone</div><input type="text" placeholder="+91 XXXXX XXXXX"></div>
+      </div>
+      <div class="form-section-title"><i class="fa-solid fa-lock"></i> Access & Role</div>
+      <div class="form-grid" style="gap:12px;margin-bottom:12px;">
+        <div class="form-group"><div class="form-label">Role <span>*</span></div><select><option>Viewer</option><option>Officer</option><option>Analyst</option><option>Admin</option></select></div>
+        <div class="form-group"><div class="form-label">Division</div><select><option>Chennai North</option><option>Chennai South</option><option>Cyber Cell HQ</option><option>Field Unit A</option></select></div>
+        <div class="form-group"><div class="form-label">Temporary Password <span>*</span></div><input type="password" placeholder="Min 12 chars"></div>
+        <div class="form-group"><div class="form-label">Force password reset</div><div class="toggle-wrap" style="margin-top:6px;"><div class="toggle on" onclick="this.classList.toggle('on')"></div><div class="toggle-label">On first login</div></div></div>
+      </div>
+      <div class="form-group"><div class="form-label">Notes</div><textarea placeholder="Optional notes about this user…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('addUserModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addUserModal');showToast('User created. Welcome email sent.','success')"><i class="fa-solid fa-user-plus"></i> Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Complaint Modal -->
+<div class="modal-overlay" id="addComplaintModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Register Complaint (Admin)</div>
+      <button class="modal-close" onclick="closeModal('addComplaintModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="gap:12px;margin-bottom:12px;">
+        <div class="form-group"><div class="form-label">Victim Name <span>*</span></div><input type="text" placeholder="Full name"></div>
+        <div class="form-group"><div class="form-label">Victim Phone</div><input type="text" placeholder="+91 XXXXX XXXXX"></div>
+        <div class="form-group"><div class="form-label">Fraud Type <span>*</span></div><select><option>UPI Fraud</option><option>SIM Swap</option><option>OTP Phishing</option><option>Investment Scam</option><option>Other</option></select></div>
+        <div class="form-group"><div class="form-label">Amount (₹) <span>*</span></div><input type="number" placeholder="0"></div>
+        <div class="form-group"><div class="form-label">Incident Date</div><input type="date"></div>
+        <div class="form-group"><div class="form-label">Assign To</div><select><option>Auto-assign</option><option>Analyst Dev</option><option>Insp. Kavitha</option><option>Team Alpha</option></select></div>
+      </div>
+      <div class="form-group"><div class="form-label">Incident Description</div><textarea placeholder="Brief description of the fraud…"></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('addComplaintModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addComplaintModal');showToast('Complaint registered. ML pipeline triggered.','success')">Register & Analyze</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Alert Rule Modal -->
+<div class="modal-overlay" id="addAlertModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create Alert Rule</div>
+      <button class="modal-close" onclick="closeModal('addAlertModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="form-group"><div class="form-label">Rule Name <span>*</span></div><input type="text" placeholder="e.g. ATM cluster critical alert"></div>
+        <div class="form-grid" style="gap:12px;">
+          <div class="form-group"><div class="form-label">Trigger Condition</div><select><option>Confidence &gt; threshold</option><option>New mule cluster detected</option><option>Complaint spike</option><option>Bank freeze failed</option></select></div>
+          <div class="form-group"><div class="form-label">Severity</div><select><option>Critical</option><option>High</option><option>Medium</option><option>Info</option></select></div>
+        </div>
+        <div class="form-group"><div class="form-label">Notify</div><select><option>All officers on duty</option><option>Supervisors only</option><option>Field Team Alpha</option><option>Custom</option></select></div>
+        <div class="form-group"><div class="form-label">Auto-action</div><select><option>None</option><option>Dispatch freeze request</option><option>Create intervention</option><option>Escalate to SP</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('addAlertModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addAlertModal');showToast('Alert rule created and active','success')"><i class="fa-solid fa-bell"></i> Create Rule</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Intervention Modal -->
+<div class="modal-overlay" id="addInterventionModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Create Intervention</div>
+      <button class="modal-close" onclick="closeModal('addInterventionModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="form-group"><div class="form-label">Location / Target <span>*</span></div><input type="text" placeholder="e.g. T. Nagar ATM Cluster, SBI Branch…"></div>
+        <div class="form-grid" style="gap:12px;">
+          <div class="form-group"><div class="form-label">Assign Team</div><select><option>Team Alpha</option><option>Team Beta</option><option>Team Gamma</option><option>Team Delta</option></select></div>
+          <div class="form-group"><div class="form-label">Officers Count</div><input type="number" value="2"></div>
+        </div>
+        <div class="form-group"><div class="form-label">Linked Prediction</div><select><option>T. Nagar — 91% confidence</option><option>Anna Nagar — 78%</option><option>Vadapalani — 63%</option><option>Manual (no prediction)</option></select></div>
+        <div class="form-group"><div class="form-label">Briefing Notes</div><textarea placeholder="Instructions for field team…"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('addInterventionModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addInterventionModal');showToast('Intervention INT-090 created. Team notified via SMS.','success')"><i class="fa-solid fa-hand"></i> Deploy Intervention</button>
+    </div>
+  </div>
+</div>
+
+<!-- Flag Mule Account Modal -->
+<div class="modal-overlay" id="addMuleModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Flag Mule Account</div>
+      <button class="modal-close" onclick="closeModal('addMuleModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="form-group"><div class="form-label">Account Number <span>*</span></div><input type="text" placeholder="XXXX XXXX XXXX XXXX"></div>
+        <div class="form-grid" style="gap:12px;">
+          <div class="form-group"><div class="form-label">Bank Name <span>*</span></div><select><option>SBI</option><option>HDFC</option><option>Axis</option><option>ICICI</option><option>Other</option></select></div>
+          <div class="form-group"><div class="form-label">Cluster</div><select><option>Cluster A</option><option>Cluster B</option><option>Cluster C</option><option>New Cluster</option></select></div>
+        </div>
+        <div class="form-group"><div class="form-label">Linked Complaint ID</div><input type="text" placeholder="C-2024-XXXX"></div>
+        <div class="form-group"><div class="form-label">Dispatch Freeze Request</div><div class="toggle-wrap" style="margin-top:4px;"><div class="toggle on" onclick="this.classList.toggle('on')"></div><div class="toggle-label">Auto-freeze via NPCI Golden Hour</div></div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('addMuleModal')">Cancel</button>
+      <button class="btn btn-danger" onclick="closeModal('addMuleModal');showToast('Account flagged & freeze request dispatched','success')"><i class="fa-solid fa-ban"></i> Flag & Freeze</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Integration Modal -->
+<div class="modal-overlay" id="addIntegrationModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Add Integration</div>
+      <button class="modal-close" onclick="closeModal('addIntegrationModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="form-group"><div class="form-label">Integration Name <span>*</span></div><input type="text" placeholder="e.g. Kotak Bank Freeze API"></div>
+        <div class="form-group"><div class="form-label">Type</div><select><option>Bank Freeze API</option><option>NPCI API</option><option>SMS Gateway</option><option>Email Service</option><option>SIEM Webhook</option><option>Other</option></select></div>
+        <div class="form-group"><div class="form-label">API Endpoint URL <span>*</span></div><input type="text" placeholder="https://api.example.com/v1/freeze"></div>
+        <div class="form-group"><div class="form-label">API Key / Token</div><input type="password" placeholder="Encrypted at rest"></div>
+        <div class="form-group"><div class="form-label">Environment</div><select><option>Production</option><option>Staging / UAT</option></select></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('addIntegrationModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('addIntegrationModal');showToast('Integration added. Connection test passed.','success')"><i class="fa-solid fa-plug"></i> Add & Test</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ── PAGE NAVIGATION ──
+const pages = {
+  'dashboard':'Admin Dashboard', 'complaints':'Complaint Registry', 'users':'Users & Roles',
+  'permissions':'Permission Management', 'audit-log':'Audit Log', 'model-config':'ML Model Config',
+  'alerts':'Alert Configuration', 'interventions':'Intervention Management',
+  'mule-network':'Mule Network Admin', 'integrations':'Integrations',
+  'analytics':'Analytics & Reports', 'settings':'System Settings'
+};
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.textContent.trim().toLowerCase().includes(pages[id]?.split(' ')[0]?.toLowerCase() || id)) n.classList.add('active');
+  });
+  // Fix active nav by onclick match
+  document.querySelectorAll('.nav-item').forEach(n => {
+    const oc = n.getAttribute('onclick') || '';
+    if (oc.includes("'"+id+"'")) { n.classList.add('active'); }
+    else { const oc2=n.getAttribute('onclick')||''; if(!oc2.includes("'"+id+"'")) n.classList.remove('active'); }
+  });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.nav-item[onclick]').forEach(n => {
+    if((n.getAttribute('onclick')||'').includes("'"+id+"'")) n.classList.add('active');
+  });
+  document.getElementById('breadcrumb-text').textContent = pages[id] || id;
+  // Lazy init
+  if (id==='dashboard') initDashboardCharts();
+  if (id==='model-config') initModelConfig();
+  if (id==='complaints') initComplaintsTable();
+  if (id==='users') initUsersTable();
+  if (id==='audit-log') initAuditLog();
+  if (id==='permissions') initPermissions();
+  if (id==='interventions') initInterventionsTable();
+  if (id==='mule-network') initMuleTable();
+  if (id==='integrations') initIntegrations();
+  if (id==='alerts') initAlertRules();
+  if (id==='analytics') initAnalyticsCharts();
+}
+
+// ── MODAL ──
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('open'); });
+});
+
+// ── TOAST ──
+function showToast(msg, type='info') {
+  const icons = {success:'fa-check-circle', error:'fa-circle-xmark', info:'fa-circle-info'};
+  const tc = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i> ${msg}`;
+  tc.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateY(10px)'; t.style.transition='all 0.3s'; setTimeout(()=>t.remove(),300); }, 3000);
+}
+
+// ── TAB SWITCHER ──
+function switchTab(el, id) {
+  el.closest('.tabs').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ── FILTER COMPLAINTS ──
+function filterComplaints(v) {
+  document.querySelectorAll('#complaintsAdminTable tr').forEach(r=>{
+    r.style.display = r.textContent.toLowerCase().includes(v.toLowerCase()) ? '' : 'none';
+  });
+}
+function toggleAll(cb) {
+  document.querySelectorAll('#complaintsAdminTable input[type=checkbox]').forEach(c=>c.checked=cb.checked);
+}
+
+// ── DATA ──
+const complaints = [
+  {id:'C-2024-0891',date:'08 Jun 09:12',victim:'Meena S.',type:'UPI Fraud',amount:'₹85,000',risk:91,status:'Open',assigned:'Analyst Dev'},
+  {id:'C-2024-0890',date:'08 Jun 08:54',victim:'Rajan P.',type:'SIM Swap',amount:'₹1,20,000',risk:78,status:'Investigating',assigned:'Team Alpha'},
+  {id:'C-2024-0889',date:'08 Jun 08:31',victim:'Sunita R.',type:'OTP Phishing',amount:'₹45,000',risk:63,status:'Investigating',assigned:'Analyst Dev'},
+  {id:'C-2024-0888',date:'07 Jun 17:22',victim:'Arul K.',type:'Investment Scam',amount:'₹5,50,000',risk:57,status:'Pending',assigned:'Insp. Kavitha'},
+  {id:'C-2024-0887',date:'07 Jun 15:10',victim:'Deepa V.',type:'UPI Fraud',amount:'₹22,000',risk:44,status:'Resolved',assigned:'Team Beta'},
+  {id:'C-2024-0886',date:'07 Jun 13:05',victim:'Murugan T.',type:'SIM Swap',amount:'₹3,10,000',risk:88,status:'Open',assigned:'Unassigned'},
+  {id:'C-2024-0885',date:'07 Jun 11:48',victim:'Lalitha N.',type:'UPI Fraud',amount:'₹67,000',risk:72,status:'Investigating',assigned:'Team Gamma'},
+  {id:'C-2024-0884',date:'07 Jun 09:30',victim:'Selvam B.',type:'OTP Phishing',amount:'₹18,000',risk:35,status:'Resolved',assigned:'Analyst Dev'},
+  {id:'C-2024-0883',date:'06 Jun 17:00',victim:'Priya M.',type:'Investment Scam',amount:'₹12,00,000',risk:95,status:'Investigating',assigned:'Team Alpha'},
+  {id:'C-2024-0882',date:'06 Jun 14:22',victim:'Karthik S.',type:'UPI Fraud',amount:'₹30,500',risk:41,status:'Pending',assigned:'Insp. Kavitha'},
+];
+
+function riskColor(r) { return r>=80?'#c62828':r>=60?'#e65100':r>=40?'#f57f17':'#2e7d32'; }
+const statusCls = {Open:'p-open',Investigating:'p-investigating',Resolved:'p-resolved',Pending:'p-pending'};
+
+function initComplaintsTable() {
+  const tb = document.getElementById('complaintsAdminTable');
+  if (!tb || tb.dataset.init) return; tb.dataset.init='1';
+  tb.innerHTML = complaints.map(c=>`
+    <tr>
+      <td><input type="checkbox"></td>
+      <td style="font-weight:600;font-size:12px">${c.id}</td>
+      <td style="font-size:11px;color:var(--text3)">${c.date}</td>
+      <td style="font-weight:500">${c.victim}</td>
+      <td>${c.type}</td>
+      <td style="font-weight:600">${c.amount}</td>
+      <td>
+        <div class="risk-wrap">
+          <div class="risk-bar"><div class="risk-fill" style="width:${c.risk}%;background:${riskColor(c.risk)}"></div></div>
+          <span style="font-size:11px;font-weight:600;color:${riskColor(c.risk)};min-width:26px">${c.risk}</span>
+        </div>
+      </td>
+      <td><span class="pill ${statusCls[c.status]}">${c.status}</span></td>
+      <td style="font-size:12px">${c.assigned}</td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-sm" onclick="showToast('Opening complaint ${c.id}','info')"><i class="fa-solid fa-eye"></i></button>
+          <button class="btn btn-sm" onclick="showToast('Editing ${c.id}','info')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm btn-danger" onclick="showToast('Complaint ${c.id} deleted','error')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function initUsersTable() {
+  const tb = document.getElementById('usersTable');
+  if (!tb || tb.dataset.init) return; tb.dataset.init='1';
+  const users = [
+    {name:'Supt. Arjun Ravi',email:'arjun.r@tnpolice.gov.in',role:'Admin',div:'Cyber Cell HQ',last:'Just now',status:'Active',twofa:true,color:'#0f1e33'},
+    {name:'Dr. Priya ML',email:'priya.ml@tnpolice.gov.in',role:'Analyst',div:'Data Science',last:'09:20 AM',status:'Active',twofa:true,color:'#1a6ab5'},
+    {name:'Analyst Dev Kumar',email:'dev.k@tnpolice.gov.in',role:'Analyst',div:'Chennai South',last:'09:15 AM',status:'Active',twofa:true,color:'#1a6ab5'},
+    {name:'Insp. Kavitha Nair',email:'kavitha.n@tnpolice.gov.in',role:'Officer',div:'Chennai North',last:'08:55 AM',status:'Active',twofa:false,color:'#2e7d32'},
+    {name:'SI Ramesh T.',email:'ramesh.t@tnpolice.gov.in',role:'Officer',div:'Field Unit A',last:'08:30 AM',status:'Active',twofa:false,color:'#2e7d32'},
+    {name:'Rk. Sharma',email:'r.sharma@tnpolice.gov.in',role:'Viewer',div:'External Liaison',last:'2 days ago',status:'Suspended',twofa:false,color:'#c62828'},
+    {name:'Admin Lakshmi',email:'lakshmi.a@tnpolice.gov.in',role:'Admin',div:'Cyber Cell HQ',last:'Yesterday',status:'Active',twofa:true,color:'#0f1e33'},
+  ];
+  const rolePill = {Admin:'p-admin',Analyst:'p-analyst',Officer:'p-officer',Viewer:'p-viewer'};
+  const stPill = {Active:'p-active',Suspended:'p-suspended'};
+  tb.innerHTML = users.map(u=>`
+    <tr>
+      <td>
+        <div class="user-row">
+          <div class="user-avatar" style="background:${u.color}">${u.name.split(' ').map(w=>w[0]).slice(0,2).join('')}</div>
+          <div><div class="user-name">${u.name}</div><div class="user-email">${u.email}</div></div>
+        </div>
+      </td>
+      <td><span class="pill ${rolePill[u.role]}">${u.role}</span></td>
+      <td style="font-size:12px">${u.div}</td>
+      <td style="font-size:12px;color:var(--text3)">${u.last}</td>
+      <td><span class="pill ${stPill[u.status]}">${u.status}</span></td>
+      <td style="text-align:center">${u.twofa?'<i class="fa-solid fa-shield-check" style="color:var(--green)"></i>':'<i class="fa-solid fa-shield-xmark" style="color:var(--text3)"></i>'}</td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-sm" onclick="showToast('Editing ${u.name}','info')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-sm" onclick="showToast('${u.status==='Active'?'Suspended':'Reactivated'}: ${u.name}','${u.status==='Active'?'error':'success'}')">${u.status==='Active'?'<i class="fa-solid fa-ban"></i>':'<i class="fa-solid fa-check"></i>'}</button>
+          <button class="btn btn-sm btn-danger" onclick="showToast('User ${u.name} removed','error')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function initAuditLog() {
+  const b = document.getElementById('auditLogBody');
+  if (!b || b.dataset.init) return; b.dataset.init='1';
+  const logs = [
+    {time:'09:42 AM',action:'User suspended',detail:'Account: rk.sharma@tnpolice.gov.in · Reason: 5 failed logins',actor:'Supt. Arjun Ravi',type:'user-mgmt'},
+    {time:'09:28 AM',action:'Intervention created',detail:'INT-089 · T. Nagar ATM Cluster · Team Alpha deployed',actor:'Analyst Dev',type:'ops'},
+    {time:'09:20 AM',action:'ML model weights saved',detail:'Cluster weight: 32%→34% · Retrain queued',actor:'Dr. Priya ML',type:'system'},
+    {time:'09:15 AM',action:'Freeze request dispatched',detail:'Account XXXX4821 · NPCI Golden Hour · Complaint #C-2024-0891',actor:'System (Auto)',type:'ops'},
+    {time:'09:12 AM',action:'Complaint created',detail:'C-2024-0891 · UPI Fraud · ₹85,000 · Victim: Meena S.',actor:'Analyst Dev',type:'data'},
+    {time:'09:08 AM',action:'User login',detail:'IP: 10.20.1.45 · Device: Chrome/Windows · 2FA passed',actor:'Supt. Arjun Ravi',type:'auth'},
+    {time:'08:55 AM',action:'User created',detail:'Insp. Kavitha Nair · Role: Officer · Div: Chennai North',actor:'Supt. Arjun Ravi',type:'user-mgmt'},
+    {time:'08:45 AM',action:'Alert rule modified',detail:'Critical threshold: 85% → 80% · Rule: ATM cluster critical',actor:'Analyst Dev',type:'system'},
+    {time:'08:30 AM',action:'API key rotated',detail:'NPCI Golden Hour API · Scheduled monthly rotation',actor:'System (Auto)',type:'system'},
+    {time:'08:00 AM',action:'Backup completed',detail:'Full DB snapshot · 4.2GB · Encrypted AES-256 · Stored: SecureVault',actor:'System (Auto)',type:'system'},
+  ];
+  const colors = {'user-mgmt':'#7c3aed','ops':'#e65100','system':'#1a6ab5','data':'#2e7d32','auth':'#8795a8'};
+  const icons = {'user-mgmt':'fa-user-gear','ops':'fa-hand','system':'fa-gear','data':'fa-database','auth':'fa-right-to-bracket'};
+  b.innerHTML = logs.map(l=>`
+    <div class="log-entry">
+      <div class="log-time">${l.time}</div>
+      <div style="flex-shrink:0;width:28px;height:28px;border-radius:7px;background:${colors[l.type]}18;display:flex;align-items:center;justify-content:center;color:${colors[l.type]};font-size:12px;margin-top:1px">
+        <i class="fa-solid ${icons[l.type]}"></i>
+      </div>
+      <div style="flex:1">
+        <div class="log-action">${l.action}</div>
+        <div class="log-detail">${l.detail}</div>
+        <div class="log-actor"><i class="fa-solid fa-user" style="font-size:9px"></i> ${l.actor}</div>
+      </div>
+    </div>`).join('');
+}
+
+function initPermissions() {
+  function makeGrid(id, items, checked) {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.init) return; el.dataset.init='1';
+    el.innerHTML = items.map(item => {
+      const on = checked.includes(item.key);
+      return `<div class="perm-item ${on?'checked':''}" onclick="this.classList.toggle('checked')">
+        <i class="fa-solid ${item.icon}"></i> ${item.label}
+        <div class="perm-check">${on?'<i class="fa-solid fa-check"></i>':''}</div>
+      </div>`;
+    }).join('');
+  }
+  const complaintPerms = [
+    {key:'view',label:'View',icon:'fa-eye'},
+    {key:'create',label:'Create',icon:'fa-plus'},
+    {key:'edit',label:'Edit',icon:'fa-pen'},
+    {key:'delete',label:'Delete',icon:'fa-trash'},
+    {key:'assign',label:'Assign',icon:'fa-user-check'},
+    {key:'export',label:'Export',icon:'fa-download'},
+  ];
+  const intelPerms = [
+    {key:'view_pred',label:'View Predictions',icon:'fa-brain'},
+    {key:'run_pred',label:'Run ML Analysis',icon:'fa-play'},
+    {key:'view_map',label:'View Threat Map',icon:'fa-map'},
+    {key:'view_net',label:'View Mule Network',icon:'fa-sitemap'},
+    {key:'flag_mule',label:'Flag Mule',icon:'fa-ban'},
+    {key:'freeze',label:'Dispatch Freeze',icon:'fa-snowflake'},
+  ];
+  const userPerms = [
+    {key:'view_u',label:'View Users',icon:'fa-users'},
+    {key:'create_u',label:'Create User',icon:'fa-user-plus'},
+    {key:'edit_u',label:'Edit User',icon:'fa-user-pen'},
+    {key:'suspend_u',label:'Suspend User',icon:'fa-user-slash'},
+    {key:'roles',label:'Manage Roles',icon:'fa-shield-halved'},
+    {key:'audit',label:'View Audit Log',icon:'fa-clipboard-list'},
+  ];
+  const sysPerms = [
+    {key:'ml_config',label:'ML Config',icon:'fa-microchip'},
+    {key:'integrations',label:'Integrations',icon:'fa-plug'},
+    {key:'alert_config',label:'Alert Rules',icon:'fa-bell'},
+    {key:'sys_settings',label:'System Settings',icon:'fa-sliders'},
+    {key:'backup',label:'Backup/Restore',icon:'fa-database'},
+    {key:'api_keys',label:'API Keys',icon:'fa-key'},
+  ];
+  makeGrid('perm-complaints-grid', complaintPerms, ['view','create','edit','delete','assign','export']);
+  makeGrid('perm-intel-grid', intelPerms, ['view_pred','run_pred','view_map','view_net','flag_mule','freeze']);
+  makeGrid('perm-users-grid', userPerms, ['view_u','create_u','edit_u','suspend_u','roles','audit']);
+  makeGrid('perm-system-grid', sysPerms, ['ml_config','integrations','alert_config','sys_settings','backup','api_keys']);
+}
+
+function initInterventionsTable() {
+  const tb = document.getElementById('interventionsAdminTable');
+  if (!tb || tb.dataset.init) return; tb.dataset.init='1';
+  const data = [
+    {id:'INT-089',loc:'T. Nagar ATM Cluster',team:'Team Alpha',officers:2,status:'Active',time:'09:28 AM',outcome:'On scene'},
+    {id:'INT-088',loc:'Anna Nagar SBI Branch',team:'Team Beta',officers:3,status:'Active',time:'08:55 AM',outcome:'Monitoring'},
+    {id:'INT-087',loc:'Vadapalani HDFC Row',team:'Team Gamma',officers:1,status:'Active',time:'08:10 AM',outcome:'Monitoring'},
+    {id:'INT-086',loc:'Tambaram Cash Hub',team:'Team Delta',officers:2,status:'Complete',time:'Yesterday',outcome:'1 arrested'},
+    {id:'INT-085',loc:'Porur Bus Terminus',team:'Team Alpha',officers:2,status:'Complete',time:'Yesterday',outcome:'₹42K seized'},
+    {id:'INT-084',loc:'Adyar HDFC ATM',team:'Team Beta',officers:2,status:'Complete',time:'2 days ago',outcome:'No contact'},
+  ];
+  const sc = {Active:'p-investigating',Complete:'p-resolved'};
+  tb.innerHTML = data.map(r=>`
+    <tr>
+      <td style="font-size:12px;font-weight:600">${r.id}</td>
+      <td style="font-weight:500">${r.loc}</td>
+      <td>${r.team}</td>
+      <td style="text-align:center">${r.officers}</td>
+      <td><span class="pill ${sc[r.status]}">${r.status}</span></td>
+      <td style="font-size:12px;color:var(--text3)">${r.time}</td>
+      <td style="font-size:12px">${r.outcome}</td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-sm" onclick="showToast('Opening INT ${r.id}','info')"><i class="fa-solid fa-eye"></i></button>
+          <button class="btn btn-sm" onclick="showToast('Editing ${r.id}','info')"><i class="fa-solid fa-pen"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function initMuleTable() {
+  const tb = document.getElementById('muleTable');
+  if (!tb || tb.dataset.init) return; tb.dataset.init='1';
+  const data = [
+    {acc:'XXXX XXXX 4821',bank:'Axis Bank',cluster:'A',amount:'₹47L',complaints:4,freeze:'Frozen'},
+    {acc:'XXXX XXXX 3310',bank:'SBI',cluster:'A',amount:'₹12L',complaints:2,freeze:'Frozen'},
+    {acc:'XXXX XXXX 9982',bank:'HDFC',cluster:'B',amount:'₹18L',complaints:3,freeze:'Pending'},
+    {acc:'XXXX XXXX 1127',bank:'ICICI',cluster:'B',amount:'₹7.5L',complaints:1,freeze:'Active'},
+    {acc:'XXXX XXXX 6654',bank:'SBI',cluster:'C',amount:'₹6L',complaints:2,freeze:'Frozen'},
+    {acc:'XXXX XXXX 2281',bank:'Axis Bank',cluster:'D',amount:'₹23L',complaints:5,freeze:'Active'},
+  ];
+  const fc = {Frozen:'p-resolved',Pending:'p-pending',Active:'p-open'};
+  tb.innerHTML = data.map(r=>`
+    <tr>
+      <td><input type="checkbox"></td>
+      <td style="font-weight:600;font-size:12px;font-family:monospace">${r.acc}</td>
+      <td>${r.bank}</td>
+      <td><span class="chip">Cluster ${r.cluster}</span></td>
+      <td style="font-weight:600;color:var(--red)">${r.amount}</td>
+      <td style="text-align:center">${r.complaints}</td>
+      <td><span class="pill ${fc[r.freeze]}">${r.freeze}</span></td>
+      <td>
+        <div style="display:flex;gap:5px;">
+          <button class="btn btn-sm btn-danger" onclick="showToast('Freeze dispatched for ${r.acc}','success')"><i class="fa-solid fa-snowflake"></i></button>
+          <button class="btn btn-sm" onclick="showToast('Viewing account details','info')"><i class="fa-solid fa-eye"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function initIntegrations() {
+  const g = document.getElementById('integrationsGrid');
+  if (!g || g.dataset.init) return; g.dataset.init='1';
+  const integrations = [
+    {name:'NPCI Golden Hour API',desc:'Account freeze requests for cybercrime victims',status:'Connected',icon:'fa-building-columns',color:'#1a6ab5'},
+    {name:'Axis Bank Freeze API',desc:'Direct freeze integration with Axis Bank',status:'Connected',icon:'fa-building-columns',color:'#2e7d32'},
+    {name:'SBI Cybercrime Portal',desc:'State Bank of India escalation gateway',status:'Connected',icon:'fa-building-columns',color:'#2e7d32'},
+    {name:'HDFC Bank API',desc:'HDFC account freeze and investigation gateway',status:'Degraded',icon:'fa-building-columns',color:'#e65100'},
+    {name:'SMS Gateway (Airtel)',desc:'Field team and victim SMS alerts',status:'Connected',icon:'fa-comment-sms',color:'#2e7d32'},
+    {name:'Tamil Nadu SIEM',desc:'Security information & event management feed',status:'Disconnected',icon:'fa-shield-halved',color:'#8795a8'},
+  ];
+  const sc = {Connected:'p-resolved',Degraded:'p-investigating',Disconnected:'p-open'};
+  g.innerHTML = integrations.map(i=>`
+    <div class="card">
+      <div class="card-header-row">
+        <div class="card-title"><i class="fa-solid ${i.icon}" style="color:${i.color}"></i> ${i.name}</div>
+        <span class="pill ${sc[i.status]}">${i.status}</span>
+      </div>
+      <div class="card-body">
+        <div style="font-size:12.5px;color:var(--text2);margin-bottom:14px;">${i.desc}</div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-sm" onclick="showToast('Testing ${i.name}...','info')"><i class="fa-solid fa-plug"></i> Test</button>
+          <button class="btn btn-sm" onclick="showToast('${i.name} settings opened','info')"><i class="fa-solid fa-pen"></i> Configure</button>
+          <button class="btn btn-sm btn-danger" onclick="showToast('${i.name} disconnected','error')"><i class="fa-solid fa-link-slash"></i></button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function initAlertRules() {
+  const b = document.getElementById('alertRulesBody');
+  if (!b || b.dataset.init) return; b.dataset.init='1';
+  const rules = [
+    {name:'ATM Cluster Critical',condition:'Confidence > 80%',sev:'Critical',action:'Dispatch freeze + SMS all officers',active:true},
+    {name:'New Mule Network Detected',condition:'Graph cluster > 3 accounts',sev:'High',action:'Flag accounts + email supervisor',active:true},
+    {name:'Bank Freeze Failed',condition:'NPCI API timeout > 2 attempts',sev:'High',action:'SMS SP on duty',active:true},
+    {name:'Complaint Spike',condition:'> 5 complaints in 30 min',sev:'Medium',action:'Dashboard push alert',active:false},
+    {name:'Mule Account Active',condition:'Flagged account transaction detected',sev:'Critical',action:'Auto-freeze + intervention create',active:true},
+  ];
+  const sc = {Critical:'p-critical',High:'p-high',Medium:'p-medium'};
+  b.innerHTML = rules.map(r=>`
+    <div class="alert-row">
+      <div class="alert-icon-box ${r.sev==='Critical'?'aib-red':r.sev==='High'?'aib-orange':'aib-blue'}">
+        <i class="fa-solid fa-bell"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div class="alert-row-title">${r.name} <span class="pill ${sc[r.sev]}" style="margin-left:5px">${r.sev}</span></div>
+          <div class="toggle ${r.active?'on':''}" onclick="this.classList.toggle('on');showToast('Rule ${r.active?'disabled':'enabled'}','info')" style="flex-shrink:0"></div>
+        </div>
+        <div class="alert-row-desc">If: ${r.condition}</div>
+        <div class="alert-row-meta"><i class="fa-solid fa-bolt" style="font-size:9px"></i> ${r.action}</div>
+      </div>
+    </div>`).join('');
+}
+
+function initModelConfig() {
+  const sc = document.getElementById('featureWeightsContainer');
+  if (!sc || sc.dataset.init) return; sc.dataset.init='1';
+  const features = [
+    {label:'Complaint cluster weight',val:34},
+    {label:'Time pattern weight',val:24},
+    {label:'Mule address proximity',val:19},
+    {label:'Bank branch proximity',val:12},
+    {label:'Historical behavior score',val:7},
+    {label:'Network centrality score',val:4},
+  ];
+  sc.innerHTML = features.map((f,i)=>`
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:5px;">
+        <span style="color:var(--text2)">${f.label}</span>
+        <span id="fw${i}" style="font-weight:700;color:var(--blue)">${f.val}%</span>
+      </div>
+      <input type="range" min="0" max="100" step="1" value="${f.val}" oninput="document.getElementById('fw${i}').textContent=this.value+'%'">
+    </div>`).join('');
+}
+
+// ── CHARTS ──
+let chartsInited = {};
+
+function initDashboardCharts() {
+  if (!chartsInited.role) {
+    chartsInited.role = true;
+    new Chart(document.getElementById('roleChart'), {
+      type:'doughnut',
+      data:{ labels:['Admin','Analyst','Officer','Viewer'], datasets:[{data:[4,11,22,5],backgroundColor:['#0f1e33','#1a6ab5','#2e7d32','#8795a8'],borderWidth:0}] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, cutout:'68%' }
+    });
+  }
+  if (!chartsInited.volume) {
+    chartsInited.volume = true;
+    const days = Array.from({length:30},(_,i)=>{ const d=new Date(2024,5,i+1); return d.getDate()+''; });
+    const vals = Array.from({length:30},()=>Math.floor(Math.random()*18+5));
+    new Chart(document.getElementById('volumeChart'), {
+      type:'bar',
+      data:{ labels:days, datasets:[{data:vals,backgroundColor:'#1a6ab5',borderRadius:3}] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{font:{size:9}}}, y:{grid:{color:'rgba(0,0,0,0.05)'}} } }
+    });
+  }
+}
+
+function initAnalyticsCharts() {
+  if (!chartsInited.recovery) {
+    chartsInited.recovery = true;
+    new Chart(document.getElementById('recoveryAdminChart'), {
+      type:'bar',
+      data:{ labels:['Jan','Feb','Mar','Apr','May','Jun'], datasets:[{label:'₹L Recovered',data:[42,58,35,71,64,89],backgroundColor:'#2e7d32',borderRadius:4}] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{grid:{display:false}}, y:{ticks:{callback:v=>v+'L'},grid:{color:'rgba(0,0,0,0.05)'}} } }
+    });
+  }
+  if (!chartsInited.acc) {
+    chartsInited.acc = true;
+    new Chart(document.getElementById('accChart'), {
+      type:'line',
+      data:{ labels:['v3.0','v3.1','v3.2','v3.3','v3.4','v3.5','v3.6','v3.7'],
+        datasets:[
+          {label:'Location',data:[72,75,78,80,82,84,85,87],borderColor:'#1a6ab5',tension:0.4,fill:false},
+          {label:'Mule ID',data:[80,82,85,86,88,90,91,92],borderColor:'#2e7d32',tension:0.4,fill:false},
+          {label:'Time Window',data:[65,68,70,72,74,76,78,79],borderColor:'#e65100',tension:0.4,fill:false},
+        ]
+      },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}, scales:{ y:{min:60,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.05)'}}, x:{grid:{display:false}} } }
+    });
+  }
+}
+
+function initModelPerfChart() {
+  if (!chartsInited.modelPerf) {
+    chartsInited.modelPerf = true;
+    const el = document.getElementById('modelPerfChart');
+    if (!el) return;
+    new Chart(el, {
+      type:'line',
+      data:{ labels:['Jan','Feb','Mar','Apr','May','Jun'],
+        datasets:[{label:'Overall Accuracy',data:[78,80,82,84,85,87],borderColor:'#1a6ab5',backgroundColor:'rgba(26,106,181,0.08)',fill:true,tension:0.4}]
+      },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{min:70,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.05)'}}, x:{grid:{display:false}} } }
+    });
+  }
+}
+
+// init on page load
+initDashboardCharts();
+
+// Model config page needs separate chart init
+const origShowPage = showPage;
+const _showPage = showPage;
+// Patch model config chart init
+const _origShow = window.showPage;
+window.showPage = function(id) {
+  _origShow ? _origShow(id) : showPage(id);
+  if (id==='model-config') setTimeout(initModelPerfChart, 100);
+};
+</script>
+</body>
+</html>
